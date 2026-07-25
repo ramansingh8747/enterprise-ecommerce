@@ -24,15 +24,23 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+<<<<<<< HEAD
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.7.4",
     "morgan": "^1.11.0",
     "twilio": "^6.0.2"
+=======
+    "mongoose": "^9.7.4",
+    "morgan": "^1.11.0"
+>>>>>>> e39b6efb4dfe21f2cbc24576fb7b5badc032a18e
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+<<<<<<< HEAD
     "@types/jsonwebtoken": "^9.0.10",
+=======
+>>>>>>> e39b6efb4dfe21f2cbc24576fb7b5badc032a18e
     "@types/morgan": "^1.9.10",
     "@types/node": "^26.1.1",
     "ts-node": "^10.9.2",
