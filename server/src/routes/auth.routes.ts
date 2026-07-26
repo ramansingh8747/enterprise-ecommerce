@@ -50,4 +50,9 @@ router.post(
     (req, res) => authController.logout(req, res)
 );
 
+router.post(
+    "/refresh-token",
+    (req, res) => authController.refreshToken(req, res)
+);
+
 export default router;

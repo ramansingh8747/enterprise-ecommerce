@@ -88,7 +88,9 @@ export class AuthController {
             );
 
             const result = await authService.verifyOtpAndLogin(
-                data.mobile
+                data.mobile,
+                req.ip,
+                req.headers["user-agent"]
             );
 
             res.status(200).json({
@@ -145,7 +147,7 @@ export class AuthController {
 
     }
 
-     // 👇 Yahi add karna hai
+    // 👇 Yahi add karna hai
     async logout(
         req: Request,
         res: Response
@@ -169,4 +171,25 @@ export class AuthController {
 
         }
 
-}}
+    }
+    async refreshToken(req: Request, res: Response): Promise<void> {
+        try {
+
+            const result = await authService.refreshAccessToken(req.body);
+
+            res.status(200).json({
+                success: true,
+                message: "Access token refreshed successfully.",
+                data: result,
+            });
+
+        } catch (error: any) {
+
+            res.status(401).json({
+                success: false,
+                message: error.message,
+            });
+
+        }
+    }
+}

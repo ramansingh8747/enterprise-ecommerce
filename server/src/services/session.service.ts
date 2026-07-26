@@ -8,7 +8,8 @@ export class SessionService {
     device?: string,
     ipAddress?: string,
     userAgent?: string
-) {
+)
+{
 
     const expiresAt = new Date();
 
@@ -24,7 +25,13 @@ export class SessionService {
         expiresAt
     });
 
-}
+    }
+     async findSessionByRefreshToken(refreshToken: string) {
+        return Session.findOne({
+            refreshToken,
+            isRevoked: false,
+        });
+    }
 
 }
 
