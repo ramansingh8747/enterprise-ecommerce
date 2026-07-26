@@ -1,11 +1,13 @@
 import User from "../models/user.model";
 import { JwtService } from "./jwt.service";
+import { SessionService } from "./session.service";
 
 export class AuthService {
 
     constructor(
-        private readonly jwtService: JwtService
-    ) { }
+        private readonly jwtService: JwtService,
+        private readonly sessionService: SessionService
+    ) {}
 
     async verifyOtpAndLogin(mobile: string) {
 
