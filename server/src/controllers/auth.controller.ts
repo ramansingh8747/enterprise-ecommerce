@@ -47,6 +47,8 @@ export class AuthController {
 
     async verifyOtp(req: Request, res: Response): Promise<void> {
 
+
+
         try {
 
             const data: VerifyOtpRequest = req.body;
@@ -58,6 +60,8 @@ export class AuthController {
                 });
 
                 return;
+
+
             }
 
             if (!/^\d{10}$/.test(data.mobile)) {
@@ -95,7 +99,7 @@ export class AuthController {
 
         } catch (error: any) {
 
-             console.error("❌ Verify OTP Error:", error);
+            console.error("❌ Verify OTP Error:", error);
 
             const message = error.message || "Something went wrong.";
 
@@ -115,4 +119,54 @@ export class AuthController {
         }
 
     }
-}
+    async getCurrentUser(
+        req: Request,
+        res: Response
+    ): Promise<void> {
+
+        try {
+
+            res.status(200).json({
+                success: true,
+                message: "Current user fetched successfully.",
+                data: req.user
+            });
+
+        } catch (error) {
+
+            console.error("❌ Get Current User Error:", error);
+
+            res.status(500).json({
+                success: false,
+                message: "Internal Server Error"
+            });
+
+        }
+
+    }
+
+     // 👇 Yahi add karna hai
+    async logout(
+        req: Request,
+        res: Response
+    ): Promise<void> {
+
+        try {
+
+            res.status(200).json({
+                success: true,
+                message: "Logged out successfully."
+            });
+
+        } catch (error) {
+
+            console.error("❌ Logout Error:", error);
+
+            res.status(500).json({
+                success: false,
+                message: "Internal Server Error"
+            });
+
+        }
+
+}}

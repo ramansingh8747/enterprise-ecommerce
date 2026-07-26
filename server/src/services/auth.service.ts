@@ -5,48 +5,49 @@ export class AuthService {
 
     constructor(
         private readonly jwtService: JwtService
-    ) {}
+    ) { }
 
     async verifyOtpAndLogin(mobile: string) {
 
-    console.log("Step 1: Finding user");
+        console.log("Step 1: Finding user");
 
-    let user = await User.findOne({ mobile });
+        let user = await User.findOne({ mobile });
 
-    console.log("User Found:", user);
+        console.log("User Found:", user);
 
-    if (!user) {
+        if (!user) {
 
-        console.log("Step 2: Creating user");
+            console.log("Step 2: Creating user");
 
-        user = await User.create({
-            mobile,
-            isVerified: true,
+            user = await User.create({
+                mobile,
+                isVerified: true,
+            });
+
+            console.log("User Created:", user);
+
+        } else {
+
+            console.log("Step 3: Updating user");
+
+            user.isVerified = true;
+            await user.save();
+
+        }
+
+        console.log("Step 4: Generating JWT");
+
+        const token = this.jwtService.generateToken({
+            id: user._id.toString(),
+            mobile: user.mobile,
+            role: user.role,
         });
 
-        console.log("User Created:", user);
+        console.log("Step 5: JWT Generated");
 
-    } else {
-
-        console.log("Step 3: Updating user");
-
-        user.isVerified = true;
-        await user.save();
-
+        return {
+            user,
+            token,
+        };
     }
-
-    console.log("Step 4: Generating JWT");
-
-    const token = this.jwtService.generateToken({
-        userId: user._id.toString(),
-        mobile: user.mobile,
-        role: user.role,
-    });
-
-    console.log("Step 5: JWT Generated");
-
-    return {
-        user,
-        token,
-    };
-}}
+}
