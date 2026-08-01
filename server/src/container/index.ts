@@ -22,8 +22,6 @@ console.log(
     typeof jwtService.verifyAccessToken
 );
 
-export const sessionService = new SessionService();
-
 export const authService = new AuthService(
     jwtService,
     sessionService

@@ -12,7 +12,6 @@ const otpSchema = new Schema<IOtp>({
     otp: {
         type: Number,
         required: true,
-        trim: true,
     },
 
     expiresAt: {

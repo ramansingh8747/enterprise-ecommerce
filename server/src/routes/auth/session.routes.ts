@@ -1,7 +1,7 @@
 import { Router } from "express";
 
-import { sessionController } from "../../controllers/auth/session.controller";
-import { authenticate } from "../../middlewares/auth.middleware";
+import { sessionController } from "../../controllers/session.controller";
+import { authenticate } from "../../middleware/auth.middleware";
 
 const router = Router();
 

@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { JwtPayload } from "../interfaces/jwt-payload.interface";
 
 import {
@@ -18,7 +18,7 @@ export class JwtService {
 
         return jwt.sign(payload, secret, {
             expiresIn: JWT_ACCESS_EXPIRES_IN,
-        });
+        } as SignOptions);
     }
 
     public generateRefreshToken(payload: JwtPayload): string {
@@ -31,7 +31,7 @@ export class JwtService {
 
         return jwt.sign(payload, secret, {
             expiresIn: JWT_REFRESH_EXPIRES_IN,
-        });
+        } as SignOptions);
     }
 
     public verifyAccessToken(token: string): JwtPayload {

@@ -232,7 +232,10 @@ export class AuthController {
 async deleteSession(req: Request, res: Response): Promise<void> {
     try {
         const userId = req.user!._id.toString();
-        const { sessionId } = req.params;
+        const sessionIdParam = req.params.sessionId;
+        const sessionId = Array.isArray(sessionIdParam)
+            ? sessionIdParam[0]
+            : sessionIdParam;
 
         await sessionService.revokeSessionById(sessionId, userId);
 

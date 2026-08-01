@@ -33,6 +33,13 @@ export const authenticate = async (
             });
         }
 
+        // Normalize legacy role aliases for enterprise RBAC middleware.
+        if (user.role === "admin") {
+            user.role = "ADMIN" as typeof user.role;
+        } else if (user.role === "user") {
+            user.role = "CUSTOMER" as typeof user.role;
+        }
+
         req.user = user;
 
         next();

@@ -1,5 +1,6 @@
 import { Document, Types } from "mongoose";
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema } from "mongoose";
+import { Role, ROLES } from "../constants/roles";
 
 export interface IUser extends Document {
     _id: Types.ObjectId;
@@ -9,7 +10,7 @@ export interface IUser extends Document {
     email: string;
     mobile: string;
     clubId?: string;
-    role: "user" | "admin";
+    role: Role | "user" | "admin";
     isVerified: boolean;
 }
 
@@ -50,8 +51,16 @@ const userSchema = new Schema<IUser>(
 
         role: {
             type: String,
-            enum: ["user", "admin"],
-            default: "user",
+            enum: {
+                values: [
+                    ...Object.values(ROLES),
+                    // Legacy aliases retained for backward compatibility
+                    "user",
+                    "admin",
+                ],
+                message: "Invalid user role.",
+            },
+            default: ROLES.CUSTOMER,
         },
 
         isVerified: {
@@ -66,4 +75,5 @@ const userSchema = new Schema<IUser>(
 
 const User = mongoose.model<IUser>("User", userSchema);
 
+export { User };
 export default User;

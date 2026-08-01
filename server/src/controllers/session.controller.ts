@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 
-import { sessionService } from "../../container";
+import { SessionService } from "../services/auth/session.service";
+
+const sessionService = new SessionService();
 
 export class SessionController {
     async getSessions(
@@ -46,7 +48,10 @@ export class SessionController {
             }
 
             const userId = req.user._id.toString();
-            const { sessionId } = req.params;
+            const sessionIdParam = req.params.sessionId;
+            const sessionId = Array.isArray(sessionIdParam)
+                ? sessionIdParam[0]
+                : sessionIdParam;
 
             await sessionService.revokeSession(userId, sessionId);
 

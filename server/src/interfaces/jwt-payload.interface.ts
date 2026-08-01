@@ -1,6 +1,12 @@
+/**
+ * JWT access/refresh token payload.
+ *
+ * `id` is the canonical user identifier used by auth middleware and services.
+ * `userId` is an optional alias kept for backward-compatible helpers.
+ */
 export interface JwtPayload {
-    userId: string;
+    id: string;
     mobile: string;
     role: string;
-    id: string;
+    userId?: string;
 }

@@ -2,7 +2,7 @@ import { Document } from "mongoose";
 
 export interface IOtp extends Document {
   mobile: string;
-  otp: string;
+  otp: number;
   expiresAt: Date;
   attempts: number;
   createdAt: Date;

@@ -1,17 +1,8 @@
 import dotenv from "dotenv";
-
 dotenv.config();
 
 import app from "./app";
 import connectDB from "./database/db";
-
-//console.log("SMS_PROVIDER =", process.env.SMS_PROVIDER)
-
-import app from "./app";
-import connectDB from "./database/db";
-
-dotenv.config();
-
 
 const PORT = process.env.PORT || 5000;
 

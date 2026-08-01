@@ -1,0 +1,320 @@
+{
+  "info": {
+    "name": "Enterprise E-commerce — Product Variant Module",
+    "description": "Complete E2E Postman collection for Module 12 Product Variants.\n\nBase: /api/v1\nAuth: Bearer JWT\nRoles: ADMIN/SUPER_ADMIN for most; SUPER_ADMIN for DELETE.\nComputed fields: finalPrice, discountPercentage, availabilityStatus.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1" },
+    { "key": "accessToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "superAdminToken", "value": "" },
+    { "key": "customerToken", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "variantId", "value": "" },
+    { "key": "variantSku", "value": "IPH16-BLK-128-TEST" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth Negative",
+      "item": [
+        {
+          "name": "Unauthorized — no token → 401",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/variants"
+          }
+        },
+        {
+          "name": "Invalid JWT → 401",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "invalid.jwt.token", "type": "string" }]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/variants"
+          }
+        },
+        {
+          "name": "Customer forbidden → 403",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{customerToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/variants"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create",
+      "item": [
+        {
+          "name": "Create (auto SKU) → 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?._id) pm.collectionVariables.set('variantId', json.data._id);",
+                  "if (json?.data?.sku) pm.collectionVariables.set('variantSku', json.data.sku);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"{{productId}}\",\n  \"color\": \"Black\",\n  \"size\": \"128\",\n  \"price\": 99999,\n  \"salePrice\": 89999,\n  \"stock\": 10,\n  \"isActive\": true,\n  \"images\": []\n}"
+            },
+            "url": "{{baseUrl}}/variants"
+          }
+        },
+        {
+          "name": "Create (custom SKU) → 201",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"{{productId}}\",\n  \"sku\": \"IPH16-BLK-128-TEST\",\n  \"color\": \"Black\",\n  \"size\": \"128\",\n  \"price\": 99999,\n  \"salePrice\": 84999,\n  \"stock\": 5,\n  \"isActive\": true\n}"
+            },
+            "url": "{{baseUrl}}/variants"
+          }
+        },
+        {
+          "name": "Duplicate SKU → 409",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"{{productId}}\",\n  \"sku\": \"IPH16-BLK-128-TEST\",\n  \"color\": \"Black\",\n  \"size\": \"256\",\n  \"price\": 109999,\n  \"stock\": 3\n}"
+            },
+            "url": "{{baseUrl}}/variants"
+          }
+        },
+        {
+          "name": "Invalid product → 404",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"64b000000000000000000000\",\n  \"color\": \"Red\",\n  \"size\": \"M\",\n  \"price\": 1000,\n  \"stock\": 1\n}"
+            },
+            "url": "{{baseUrl}}/variants"
+          }
+        },
+        {
+          "name": "salePrice > price → 400",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"{{productId}}\",\n  \"color\": \"Blue\",\n  \"size\": \"L\",\n  \"price\": 1000,\n  \"salePrice\": 1500,\n  \"stock\": 1\n}"
+            },
+            "url": "{{baseUrl}}/variants"
+          }
+        },
+        {
+          "name": "Negative stock → 400",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"{{productId}}\",\n  \"color\": \"Green\",\n  \"size\": \"S\",\n  \"price\": 1000,\n  \"stock\": -1\n}"
+            },
+            "url": "{{baseUrl}}/variants"
+          }
+        },
+        {
+          "name": "Missing price → 400",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"{{productId}}\",\n  \"color\": \"Yellow\",\n  \"size\": \"M\",\n  \"stock\": 1\n}"
+            },
+            "url": "{{baseUrl}}/variants"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Read / List",
+      "item": [
+        {
+          "name": "List with filters/search/sort/pagination",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/variants?page=1&limit=10&product={{productId}}&color=Black&size=128&isActive=true&minPrice=1000&maxPrice=200000&search=BLK&sortBy=price&sortOrder=asc"
+          }
+        },
+        {
+          "name": "Get by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/variants/{{variantId}}"
+          }
+        },
+        {
+          "name": "Get by invalid ID → 400",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/variants/not-a-mongo-id"
+          }
+        },
+        {
+          "name": "Get non-existing → 404",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/variants/64b000000000000000000000"
+          }
+        },
+        {
+          "name": "Get variants by product",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products/{{productId}}/variants"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update",
+      "item": [
+        {
+          "name": "Update price/salePrice/color/size/stock",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 97999,\n  \"salePrice\": 87999,\n  \"color\": \"Midnight\",\n  \"size\": \"128GB\",\n  \"stock\": 12\n}"
+            },
+            "url": "{{baseUrl}}/variants/{{variantId}}"
+          }
+        },
+        {
+          "name": "Update duplicate SKU → 409",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"IPH16-BLK-128-TEST\"\n}"
+            },
+            "url": "{{baseUrl}}/variants/{{variantId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stock",
+      "item": [
+        {
+          "name": "Set stock",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"set\",\n  \"stock\": 20\n}"
+            },
+            "url": "{{baseUrl}}/variants/{{variantId}}/stock"
+          }
+        },
+        {
+          "name": "Increase stock",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"increase\",\n  \"quantity\": 5\n}"
+            },
+            "url": "{{baseUrl}}/variants/{{variantId}}/stock"
+          }
+        },
+        {
+          "name": "Decrease stock",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"decrease\",\n  \"quantity\": 3\n}"
+            },
+            "url": "{{baseUrl}}/variants/{{variantId}}/stock"
+          }
+        },
+        {
+          "name": "Decrease below zero → 400",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"decrease\",\n  \"quantity\": 999999\n}"
+            },
+            "url": "{{baseUrl}}/variants/{{variantId}}/stock"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete",
+      "item": [
+        {
+          "name": "Admin delete forbidden → 403",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "url": "{{baseUrl}}/variants/{{variantId}}"
+          }
+        },
+        {
+          "name": "SUPER_ADMIN delete → 200",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{superAdminToken}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "url": "{{baseUrl}}/variants/{{variantId}}"
+          }
+        },
+        {
+          "name": "Delete non-existing → 404",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{superAdminToken}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "url": "{{baseUrl}}/variants/{{variantId}}"
+          }
+        }
+      ]
+    }
+  ]
+}

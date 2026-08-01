@@ -1,5 +1,5 @@
 import twilio, { Twilio } from "twilio";
-import { ISmsProvider } from "../../services/sms/sms.interface";
+import { ISmsProvider } from "../../interfaces/sms-provider.interface";
 
 export class TwilioProvider implements ISmsProvider {
 

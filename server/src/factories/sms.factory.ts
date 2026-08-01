@@ -1,4 +1,4 @@
-import { ISmsProvider } from "../services/sms/sms.interface";
+import { ISmsProvider } from "../interfaces/sms-provider.interface";
 import { MockProvider } from "../providers/sms/mock.provider";
 import { TwilioProvider } from "../providers/sms/twilio.provider";
 import { Msg91Provider } from "../providers/sms/msg91.provider";

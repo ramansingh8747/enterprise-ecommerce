@@ -1,4 +1,4 @@
-import { ISmsProvider } from "../../services/sms/sms.interface";
+import { ISmsProvider } from "../../interfaces/sms-provider.interface";
 
 export class MockProvider implements ISmsProvider {
 
