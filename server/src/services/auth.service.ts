@@ -4,12 +4,17 @@ import { SessionService } from "./session.service";
 import { RefreshTokenRequest } from "../interfaces/refresh-token-request.interface";
 import { RefreshTokenResponse } from "../interfaces/refresh-token-response.interface";
 
+
 export class AuthService {
 
     constructor(
         private readonly jwtService: JwtService,
         private readonly sessionService: SessionService
     ) { }
+
+    public async logout(userId: string): Promise<void> {
+        await this.sessionService.revokeSessionsByUserId(userId);
+    }
 
     async verifyOtpAndLogin(
         mobile: string,

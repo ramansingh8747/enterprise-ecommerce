@@ -1,7 +1,8 @@
-import { authService, otpService } from "../container";
+import { authService, otpService,sessionService } from "../container";
 import { Request, Response } from "express";
 import { ApiResponse } from "../interfaces/api-response.interface";
 import { VerifyOtpRequest } from "../interfaces/verify-otp-request.interface";
+
 
 
 export class AuthController {
@@ -155,6 +156,10 @@ export class AuthController {
 
         try {
 
+            const userId = req.user!._id.toString();
+
+            await authService.logout(userId);
+
             res.status(200).json({
                 success: true,
                 message: "Logged out successfully."
@@ -183,6 +188,7 @@ export class AuthController {
                 data: result,
             });
 
+
         } catch (error: any) {
 
             res.status(401).json({
@@ -192,4 +198,55 @@ export class AuthController {
 
         }
     }
+
+    async getSessions(
+    req: Request,
+    res: Response
+): Promise<void> {
+
+    try {
+
+        const userId = req.user!._id.toString();
+
+        const sessions = await sessionService.getSessionsByUserId(userId);
+
+        res.status(200).json({
+            success: true,
+            message: "Sessions fetched successfully.",
+            data: sessions
+        });
+
+    } catch (error) {
+
+        console.error("❌ Get Sessions Error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+
+    }
+
+}
+
+async deleteSession(req: Request, res: Response): Promise<void> {
+    try {
+        const userId = req.user!._id.toString();
+        const { sessionId } = req.params;
+
+        await sessionService.revokeSessionById(sessionId, userId);
+
+        res.status(200).json({
+            success: true,
+            message: "Session revoked successfully."
+        });
+
+    } catch (error) {
+        console.error("❌ Delete Session Error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
 }

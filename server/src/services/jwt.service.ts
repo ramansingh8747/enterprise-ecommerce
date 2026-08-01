@@ -3,12 +3,12 @@ import { JwtPayload } from "../interfaces/jwt-payload.interface";
 
 import {
     JWT_ACCESS_EXPIRES_IN,
-    JWT_REFRESH_EXPIRES_IN
+    JWT_REFRESH_EXPIRES_IN,
 } from "../constants/jwt.constants";
 
 export class JwtService {
 
-    generateAccessToken(payload: JwtPayload): string {
+    public generateAccessToken(payload: JwtPayload): string {
 
         const secret = process.env.JWT_ACCESS_SECRET;
 
@@ -16,18 +16,12 @@ export class JwtService {
             throw new Error("JWT_ACCESS_SECRET is not configured.");
         }
 
-        return jwt.sign(
-            payload,
-            secret,
-            {
-                expiresIn: JWT_ACCESS_EXPIRES_IN
-            }
-        );
+        return jwt.sign(payload, secret, {
+            expiresIn: JWT_ACCESS_EXPIRES_IN,
+        });
     }
 
-    generateRefreshToken(payload: JwtPayload): string {
-
-
+    public generateRefreshToken(payload: JwtPayload): string {
 
         const secret = process.env.JWT_REFRESH_SECRET;
 
@@ -35,16 +29,23 @@ export class JwtService {
             throw new Error("JWT_REFRESH_SECRET is not configured.");
         }
 
-        return jwt.sign(
-            payload,
-            secret,
-            {
-                expiresIn: JWT_REFRESH_EXPIRES_IN
-            }
-        );
+        return jwt.sign(payload, secret, {
+            expiresIn: JWT_REFRESH_EXPIRES_IN,
+        });
     }
 
-    verifyRefreshToken(token: string): JwtPayload {
+    public verifyAccessToken(token: string): JwtPayload {
+
+        const secret = process.env.JWT_ACCESS_SECRET;
+
+        if (!secret) {
+            throw new Error("JWT_ACCESS_SECRET is not configured.");
+        }
+
+        return jwt.verify(token, secret) as JwtPayload;
+    }
+
+    public verifyRefreshToken(token: string): JwtPayload {
 
         const secret = process.env.JWT_REFRESH_SECRET;
 
@@ -53,4 +54,5 @@ export class JwtService {
         }
 
         return jwt.verify(token, secret) as JwtPayload;
-    }}
+    }
+}

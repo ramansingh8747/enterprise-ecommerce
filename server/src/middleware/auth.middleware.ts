@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { JwtPayload } from "../interfaces/jwt-payload.interface";
-
+import { jwtService } from "../container";
 import User from "../models/user.model";
 
 export const authenticate = async (
@@ -10,6 +8,7 @@ export const authenticate = async (
     next: NextFunction
 ) => {
     try {
+
         const authHeader = req.headers.authorization;
 
         console.log("Authorization Header:", authHeader);
@@ -23,10 +22,7 @@ export const authenticate = async (
 
         const token = authHeader.split(" ")[1];
 
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET!
-        ) as JwtPayload;
+        const decoded = jwtService.verifyAccessToken(token);
 
         const user = await User.findById(decoded.id).select("-__v");
 
@@ -42,6 +38,8 @@ export const authenticate = async (
         next();
 
     } catch (error) {
+
+        console.error("Authenticate Middleware Error:", error);
 
         return res.status(401).json({
             success: false,

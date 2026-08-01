@@ -3,6 +3,7 @@ import { AuthController } from "../controllers/auth.controller";
 import { authenticate } from "../middleware/auth.middleware";
 
 
+
 const router = Router();
 
 const authController = new AuthController();
@@ -53,6 +54,24 @@ router.post(
 router.post(
     "/refresh-token",
     (req, res) => authController.refreshToken(req, res)
+);
+
+router.post(
+    "/logout",
+    authenticate,
+    authController.logout.bind(authController)
+);
+
+router.get(
+    "/sessions",
+    authenticate,
+    (req, res) => authController.getSessions(req, res)
+);
+
+router.delete(
+    "/sessions/:sessionId",
+    authenticate,
+    (req, res) => authController.deleteSession(req, res)
 );
 
 export default router;
