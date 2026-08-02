@@ -4,6 +4,7 @@ import { authenticate } from "../middleware/auth.middleware";
 import { authorize, ROLES } from "../middleware/role.middleware";
 import { uploadProductImages } from "../middleware/upload.middleware";
 import { BrandRepository } from "../modules/brand/brand.repository";
+import { MediaRepository } from "../modules/media/repositories/media.repository";
 import { ProductRepository } from "../repositories/product.repository";
 import { ProductService } from "../services/product.service";
 import {
@@ -26,9 +27,11 @@ import {
 
 const productRepository = new ProductRepository();
 const brandRepository = new BrandRepository();
+const mediaRepository = new MediaRepository();
 const productService = new ProductService(
     productRepository,
-    brandRepository
+    brandRepository,
+    mediaRepository
 );
 const productController = new ProductController(productService);
 

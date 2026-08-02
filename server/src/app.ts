@@ -7,6 +7,9 @@ import productRoutes from "./routes/product.routes";
 import variantRoutes, {
   productVariantRoutes,
 } from "./modules/variant/variant.routes";
+import { productMediaRoutes } from "./modules/media/routes/media.routes";
+import inventoryRoutes from "./modules/inventory/routes/inventory.routes";
+import orderRoutes from "./modules/order/routes/order.routes";
 import { errorHandler } from "./middleware/error.middleware";
 
 
@@ -20,7 +23,12 @@ app.use(morgan("dev"));
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/products", productVariantRoutes);
+app.use("/api/v1/products", productMediaRoutes);
 app.use("/api/v1/variants", variantRoutes);
+// Inventory APIs (Module 14.8) — requires mount so REST endpoints are reachable
+app.use("/api/v1/inventory", inventoryRoutes);
+// Order APIs (Module 15.4) — requires mount so POST /orders is reachable
+app.use("/api/v1/orders", orderRoutes);
 
 // Root Route
 app.get("/", (req, res) => {

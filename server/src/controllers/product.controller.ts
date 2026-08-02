@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ApiResponse } from "../interfaces/api-response.interface";
 import { IProduct } from "../interfaces/product.interface";
+import { IProductWithMedia } from "../interfaces/product-media.interface";
 import {
     ProductPaginationMeta,
 } from "../interfaces/product-listing.interface";
@@ -39,7 +40,7 @@ export class ProductController {
 
             const product = await this.productService.createProduct(payload);
 
-            const response: ApiResponse<IProduct> = {
+            const response: ApiResponse<IProductWithMedia> = {
                 success: true,
                 message: "Product created successfully.",
                 data: product,
@@ -64,7 +65,7 @@ export class ProductController {
 
             const product = await this.productService.getProductById(id);
 
-            const response: ApiResponse<IProduct> = {
+            const response: ApiResponse<IProductWithMedia> = {
                 success: true,
                 message: "Product fetched successfully.",
                 data: product,
@@ -89,7 +90,7 @@ export class ProductController {
 
             const product = await this.productService.getProductBySku(sku);
 
-            const response: ApiResponse<IProduct> = {
+            const response: ApiResponse<IProductWithMedia> = {
                 success: true,
                 message: "Product fetched successfully.",
                 data: product,
@@ -114,7 +115,7 @@ export class ProductController {
 
             const product = await this.productService.getProductBySlug(slug);
 
-            const response: ApiResponse<IProduct> = {
+            const response: ApiResponse<IProductWithMedia> = {
                 success: true,
                 message: "Product fetched successfully.",
                 data: product,
@@ -152,7 +153,7 @@ export class ProductController {
                 limit: this.getQueryNumber(req.query.limit),
             });
 
-            const response: ApiResponse<IProduct[]> & {
+            const response: ApiResponse<IProductWithMedia[]> & {
                 pagination: ProductPaginationMeta;
             } = {
                 success: true,
@@ -184,7 +185,7 @@ export class ProductController {
                 payload
             );
 
-            const response: ApiResponse<IProduct> = {
+            const response: ApiResponse<IProductWithMedia> = {
                 success: true,
                 message: "Product updated successfully.",
                 data: product,
@@ -209,7 +210,7 @@ export class ProductController {
 
             const product = await this.productService.deleteProduct(id);
 
-            const response: ApiResponse<IProduct> = {
+            const response: ApiResponse<IProductWithMedia> = {
                 success: true,
                 message: "Product deleted successfully.",
                 data: product,

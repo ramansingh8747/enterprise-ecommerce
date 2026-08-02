@@ -130,6 +130,75 @@ export class ProductRepository {
     }
 
     /**
+     * Associates Media ObjectIds with a Product using $addToSet (no duplicates).
+     */
+    async addMediaReferences(
+        productId: string | Types.ObjectId,
+        mediaIds: Array<string | Types.ObjectId>
+    ): Promise<IProduct | null> {
+        if (!Types.ObjectId.isValid(String(productId))) {
+            return null;
+        }
+
+        const objectIds = mediaIds
+            .filter((id) => Types.ObjectId.isValid(String(id)))
+            .map((id) => new Types.ObjectId(String(id)));
+
+        if (!objectIds.length) {
+            return this.findById(productId);
+        }
+
+        await this.productModel
+            .findByIdAndUpdate(
+                productId,
+                {
+                    $addToSet: {
+                        media: { $each: objectIds },
+                    },
+                },
+                {
+                    new: true,
+                    runValidators: true,
+                }
+            )
+            .exec();
+
+        return this.findById(productId);
+    }
+
+    /**
+     * Removes a Media ObjectId reference from a Product ($pull).
+     */
+    async removeMediaReference(
+        productId: string | Types.ObjectId,
+        mediaId: string | Types.ObjectId
+    ): Promise<IProduct | null> {
+        if (
+            !Types.ObjectId.isValid(String(productId)) ||
+            !Types.ObjectId.isValid(String(mediaId))
+        ) {
+            return null;
+        }
+
+        await this.productModel
+            .findByIdAndUpdate(
+                productId,
+                {
+                    $pull: {
+                        media: new Types.ObjectId(String(mediaId)),
+                    },
+                },
+                {
+                    new: true,
+                    runValidators: true,
+                }
+            )
+            .exec();
+
+        return this.findById(productId);
+    }
+
+    /**
      * Updates a product by id.
      * Returns the updated Product with Brand populated via findById.
      */

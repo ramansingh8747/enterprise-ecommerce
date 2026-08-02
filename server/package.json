@@ -9,9 +9,17 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "clean": "rmdir /s /q dist",
-    "test": "echo \"Tests will be added later\"",
+    "test": "npm run test:media:e2e:seeded",
     "test:variant:e2e": "ts-node --transpile-only scripts/e2e-variant.smoke.ts",
-    "test:variant:e2e:seeded": "ts-node --transpile-only scripts/run-variant-e2e.ts"
+    "test:variant:e2e:seeded": "ts-node --transpile-only scripts/run-variant-e2e.ts",
+    "test:media:validators": "ts-node --transpile-only scripts/e2e-media.validators.ts",
+    "test:media:service": "ts-node --transpile-only scripts/e2e-media.service.ts",
+    "test:media:e2e": "ts-node --transpile-only scripts/e2e-media.smoke.ts",
+    "test:media:e2e:seeded": "ts-node --transpile-only scripts/run-media-e2e.ts",
+    "test:inventory:validators": "ts-node --transpile-only scripts/e2e-inventory.validators.ts",
+    "test:inventory:service": "ts-node --transpile-only scripts/e2e-inventory.service.ts",
+    "test:inventory:e2e": "ts-node --transpile-only scripts/e2e-inventory.smoke.ts",
+    "test:inventory:e2e:seeded": "ts-node --transpile-only scripts/run-inventory-e2e.ts"
   },
   "keywords": [
     "express",

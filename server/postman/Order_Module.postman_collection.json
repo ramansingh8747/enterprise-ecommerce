@@ -1,0 +1,376 @@
+{
+  "info": {
+    "name": "Enterprise E-commerce — Order Module",
+    "description": "Module 15.4–15.8 Order Creation, Status, APIs, and Reports.\n\nBase: /api/v1/orders\nAuth: Bearer JWT\n- Create/List/Get: CUSTOMER / ADMIN / SUPER_ADMIN\n- Status + Reports: ADMIN / SUPER_ADMIN",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1" },
+    { "key": "accessToken", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "variantId", "value": "" },
+    { "key": "orderId", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Create Order",
+      "item": [
+        {
+          "name": "POST /orders → 201",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"variantId\": \"{{variantId}}\",\n      \"quantity\": 1\n    }\n  ],\n  \"shippingAddress\": {\n    \"fullName\": \"Test Customer\",\n    \"phone\": \"9999999999\",\n    \"line1\": \"12 Market Street\",\n    \"city\": \"Mumbai\",\n    \"state\": \"MH\",\n    \"postalCode\": \"400001\",\n    \"country\": \"IN\"\n  },\n  \"currency\": \"INR\",\n  \"notes\": \"E2E order\"\n}"
+            },
+            "url": "{{baseUrl}}/orders",
+            "description": "Valid order creation.\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Order created successfully.\",\n  \"data\": { \"order\": { \"orderNumber\": \"ORD-...\", \"orderStatus\": \"PENDING\", \"paymentStatus\": \"PENDING\" } }\n}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.order?._id) {",
+                  "  pm.collectionVariables.set('orderId', json.data.order._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid product → 404",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"507f1f77bcf86cd799439011\",\n      \"variantId\": \"{{variantId}}\",\n      \"quantity\": 1\n    }\n  ],\n  \"shippingAddress\": {\n    \"fullName\": \"Test Customer\",\n    \"line1\": \"12 Market Street\",\n    \"city\": \"Mumbai\",\n    \"postalCode\": \"400001\",\n    \"country\": \"IN\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/orders",
+            "description": "Sample response:\n{\n  \"success\": false,\n  \"message\": \"Product not found.\"\n}"
+          }
+        },
+        {
+          "name": "Invalid variant → 404",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"variantId\": \"507f1f77bcf86cd799439011\",\n      \"quantity\": 1\n    }\n  ],\n  \"shippingAddress\": {\n    \"fullName\": \"Test Customer\",\n    \"line1\": \"12 Market Street\",\n    \"city\": \"Mumbai\",\n    \"postalCode\": \"400001\",\n    \"country\": \"IN\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/orders",
+            "description": "Sample response:\n{\n  \"success\": false,\n  \"message\": \"Variant not found.\"\n}"
+          }
+        },
+        {
+          "name": "Insufficient inventory → 400",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"variantId\": \"{{variantId}}\",\n      \"quantity\": 999999\n    }\n  ],\n  \"shippingAddress\": {\n    \"fullName\": \"Test Customer\",\n    \"line1\": \"12 Market Street\",\n    \"city\": \"Mumbai\",\n    \"postalCode\": \"400001\",\n    \"country\": \"IN\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/orders",
+            "description": "Sample response:\n{\n  \"success\": false,\n  \"message\": \"Insufficient stock.\"\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Order Status",
+      "item": [
+        {
+          "name": "PATCH PENDING → CONFIRMED → 200",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CONFIRMED\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status",
+            "description": "Requires ADMIN / SUPER_ADMIN JWT."
+          }
+        },
+        {
+          "name": "PATCH CONFIRMED → PROCESSING → 200",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PROCESSING\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status"
+          }
+        },
+        {
+          "name": "PATCH PROCESSING → PACKED → 200",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PACKED\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status"
+          }
+        },
+        {
+          "name": "PATCH PACKED → SHIPPED → 200",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SHIPPED\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status"
+          }
+        },
+        {
+          "name": "PATCH SHIPPED → DELIVERED → 200",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"DELIVERED\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status"
+          }
+        },
+        {
+          "name": "PATCH DELIVERED → RETURN_REQUESTED → 200",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RETURN_REQUESTED\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status"
+          }
+        },
+        {
+          "name": "PATCH RETURN_REQUESTED → RETURNED → 200",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RETURNED\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status"
+          }
+        },
+        {
+          "name": "PATCH RETURNED → REFUNDED → 200",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"REFUNDED\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status"
+          }
+        },
+        {
+          "name": "PATCH DELIVERED → PROCESSING → 400",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PROCESSING\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status",
+            "description": "Invalid transition (use an order currently DELIVERED)."
+          }
+        },
+        {
+          "name": "PATCH SHIPPED → PENDING → 400",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PENDING\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status"
+          }
+        },
+        {
+          "name": "PATCH CANCELLED → SHIPPED → 400",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SHIPPED\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status"
+          }
+        },
+        {
+          "name": "PATCH Invalid Order ID → 404",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CONFIRMED\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/000000000000000000000000/status"
+          }
+        },
+        {
+          "name": "PATCH Invalid Status → 400",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"NOT_A_REAL_STATUS\"\n}"
+            },
+            "url": "{{baseUrl}}/orders/{{orderId}}/status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order APIs (List / Get)",
+      "item": [
+        {
+          "name": "GET /orders → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders?page=1&limit=20"
+          }
+        },
+        {
+          "name": "GET /orders?status=PENDING → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders?status=PENDING"
+          }
+        },
+        {
+          "name": "GET /orders?paymentStatus=PENDING → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders?paymentStatus=PENDING"
+          }
+        },
+        {
+          "name": "GET /orders/:id → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders/{{orderId}}"
+          }
+        },
+        {
+          "name": "GET Invalid Order ID → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders/000000000000000000000000"
+          }
+        },
+        {
+          "name": "GET Invalid Pagination → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders?page=0"
+          }
+        },
+        {
+          "name": "GET Invalid Filter → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders?status=NOT_REAL"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order Reports",
+      "item": [
+        {
+          "name": "GET /orders/reports/summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders/reports/summary"
+          }
+        },
+        {
+          "name": "GET /orders/reports/revenue",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders/reports/revenue"
+          }
+        },
+        {
+          "name": "GET /orders/reports/status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders/reports/status"
+          }
+        },
+        {
+          "name": "GET /orders/reports/daily",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders/reports/daily"
+          }
+        },
+        {
+          "name": "GET /orders/reports/monthly",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders/reports/monthly"
+          }
+        },
+        {
+          "name": "Invalid date range → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders/reports/summary?dateFrom=2026-12-31&dateTo=2026-01-01"
+          }
+        },
+        {
+          "name": "Invalid status filter → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/orders/reports/summary?status=NOT_REAL"
+          }
+        }
+      ]
+    }
+  ]
+}

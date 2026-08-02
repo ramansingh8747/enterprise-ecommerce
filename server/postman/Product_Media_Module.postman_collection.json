@@ -1,0 +1,224 @@
+{
+  "info": {
+    "name": "Enterprise E-commerce — Product Media Module",
+    "description": "Complete E2E Postman collection for Module 13 Product Images / Media Management.\n\nBase: /api/v1\nAuth: Bearer JWT (ADMIN / SUPER_ADMIN)\nMultipart fields: images (upload), image (replace)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1" },
+    { "key": "accessToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "customerToken", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "mediaId", "value": "" },
+    { "key": "mediaIdSecondary", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth Negative",
+      "item": [
+        {
+          "name": "Unauthorized upload → 401",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/products/{{productId}}/media"
+          }
+        },
+        {
+          "name": "Customer forbidden upload → 403",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{customerToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/products/{{productId}}/media"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload Image",
+      "item": [
+        {
+          "name": "Upload single image → 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.uploaded?.[0]?.id) {",
+                  "  pm.collectionVariables.set('mediaId', json.data.uploaded[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": [],
+                  "description": "Select one image (jpg/png/webp/avif)"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/products/{{productId}}/media"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload Multiple Images",
+      "item": [
+        {
+          "name": "Upload multiple images → 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "const uploaded = json?.data?.uploaded || [];",
+                  "if (uploaded[0]?.id) pm.collectionVariables.set('mediaId', uploaded[0].id);",
+                  "if (uploaded[1]?.id) pm.collectionVariables.set('mediaIdSecondary', uploaded[1].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": [],
+                  "description": "Select 2+ images"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/products/{{productId}}/media"
+          }
+        },
+        {
+          "name": "Upload invalid MIME → 400",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": [],
+                  "description": "Attach a .txt or .pdf file"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/products/{{productId}}/media"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Set Primary Image",
+      "item": [
+        {
+          "name": "Set primary → 200",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/products/{{productId}}/media/{{mediaIdSecondary}}/primary"
+          }
+        },
+        {
+          "name": "Already primary → 409",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/products/{{productId}}/media/{{mediaIdSecondary}}/primary"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Replace Image",
+      "item": [
+        {
+          "name": "Replace image → 200",
+          "request": {
+            "method": "PUT",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "description": "Replacement image"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/products/{{productId}}/media/{{mediaId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Image",
+      "item": [
+        {
+          "name": "Delete image → 200",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/products/{{productId}}/media/{{mediaId}}"
+          }
+        },
+        {
+          "name": "Delete Media not found → 404",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/products/{{productId}}/media/aaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        }
+      ]
+    }
+  ]
+}

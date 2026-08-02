@@ -1,5 +1,5 @@
 import { ProductStatus, StockStatus } from "./product.interface";
-import { IProduct } from "./product.interface";
+import { IProductWithMedia } from "./product-media.interface";
 
 /**
  * Supported product listing sort keys.
@@ -52,6 +52,6 @@ export interface ProductPaginationMeta {
  * Enterprise product listing result.
  */
 export interface ProductListResult {
-    data: IProduct[];
+    data: IProductWithMedia[];
     pagination: ProductPaginationMeta;
 }

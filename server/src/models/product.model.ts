@@ -112,6 +112,20 @@ const productSchema = new Schema<IProduct>(
             trim: true,
         },
 
+        /**
+         * References to Media documents (ObjectId[]).
+         * Asset binaries/URLs live on Media — not duplicated here.
+         */
+        media: {
+            type: [
+                {
+                    type: Schema.Types.ObjectId,
+                    ref: "Media",
+                },
+            ],
+            default: [],
+        },
+
         tags: {
             type: [String],
             default: [],

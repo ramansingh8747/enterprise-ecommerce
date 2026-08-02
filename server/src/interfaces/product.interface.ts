@@ -44,8 +44,19 @@ export interface IProduct extends Document {
     category: Types.ObjectId;
     brand: Types.ObjectId;
 
+    /**
+     * Legacy Cloudinary URL strings (backward compatible).
+     * New uploads should prefer Media records referenced via `media`.
+     */
     images: string[];
     thumbnail?: string;
+
+    /**
+     * ObjectId references to Media documents (Media remains asset owner).
+     * Populated selectively on Product reads as media summaries.
+     */
+    media: Types.ObjectId[];
+
     tags: string[];
 
     status: ProductStatus;

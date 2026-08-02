@@ -1,0 +1,297 @@
+{
+  "info": {
+    "name": "Enterprise E-commerce — Inventory Module",
+    "description": "Module 14.8–14.9 Inventory APIs + Reports.\n\nBase: /api/v1/inventory\nAuth: Bearer JWT (ADMIN / SUPER_ADMIN)\n\nOperational:\n- GET /inventory\n- GET /inventory/:id\n- PATCH /inventory/:id/adjust\n- POST /inventory/:id/reserve\n- POST /inventory/:id/release\n- GET /inventory/:id/movements\n- GET /inventory/alerts\n\nReports (read-only):\n- GET /inventory/reports/summary\n- GET /inventory/reports/low-stock\n- GET /inventory/reports/movements\n- GET /inventory/reports/reservations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1" },
+    { "key": "accessToken", "value": "" },
+    { "key": "inventoryId", "value": "" },
+    { "key": "reservationId", "value": "" },
+    { "key": "referenceId", "value": "507f1f77bcf86cd799439011" },
+    { "key": "productId", "value": "" },
+    { "key": "warehouseId", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "GET /inventory/reports/summary → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/inventory/reports/summary",
+            "description": "KPI summary (read-only aggregation).\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Inventory summary report fetched successfully.\",\n  \"data\": {\n    \"totalInventoryRecords\": 42,\n    \"totalProducts\": 30,\n    \"totalAvailableStock\": 1200,\n    \"totalReservedStock\": 80,\n    \"totalStock\": 1280,\n    \"activeLowStockAlerts\": 5\n  }\n}"
+          }
+        },
+        {
+          "name": "GET /inventory/reports/low-stock → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory/reports/low-stock?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["inventory", "reports", "low-stock"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "Paginated rows where availableStock <= reorderLevel.\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Low stock report fetched successfully.\",\n  \"data\": [{\n    \"inventory\": \"...\",\n    \"product\": \"...\",\n    \"variant\": \"...\",\n    \"warehouseId\": \"...\",\n    \"currentStock\": 3,\n    \"reorderLevel\": 10,\n    \"sku\": \"SKU-1\"\n  }],\n  \"pagination\": { \"total\": 5, \"page\": 1, \"limit\": 20, \"totalPages\": 1, \"hasNext\": false, \"hasPrevious\": false }\n}"
+          }
+        },
+        {
+          "name": "GET /inventory/reports/movements → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory/reports/movements?movementType=&startDate=2026-01-01T00:00:00.000Z&endDate=2026-12-31T23:59:59.000Z",
+              "host": ["{{baseUrl}}"],
+              "path": ["inventory", "reports", "movements"],
+              "query": [
+                { "key": "movementType", "value": "ADJUSTMENT", "disabled": true },
+                { "key": "startDate", "value": "2026-01-01T00:00:00.000Z" },
+                { "key": "endDate", "value": "2026-12-31T23:59:59.000Z" },
+                { "key": "warehouseId", "value": "{{warehouseId}}", "disabled": true }
+              ]
+            },
+            "description": "Movement analytics totals (read-only).\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Movement analytics report fetched successfully.\",\n  \"data\": {\n    \"totalMovements\": 100,\n    \"totalIn\": 20,\n    \"totalOut\": 15,\n    \"totalReserve\": 30,\n    \"totalRelease\": 10,\n    \"totalAdjustment\": 25\n  }\n}"
+          }
+        },
+        {
+          "name": "GET /inventory/reports/reservations → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory/reports/reservations?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["inventory", "reports", "reservations"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "Reservation status counts + paginated history.\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Reservation report fetched successfully.\",\n  \"data\": {\n    \"counts\": { \"ACTIVE\": 4, \"RELEASED\": 12, \"CONSUMED\": 8 },\n    \"reservations\": [{ \"status\": \"ACTIVE\", \"reservedQuantity\": 2 }]\n  },\n  \"pagination\": { \"total\": 24, \"page\": 1, \"limit\": 20, \"totalPages\": 2, \"hasNext\": true, \"hasPrevious\": false }\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Inventory",
+      "item": [
+        {
+          "name": "GET /inventory → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory?page=1&limit=20&search=&isActive=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["inventory"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "warehouseId", "value": "{{warehouseId}}", "disabled": true },
+                { "key": "product", "value": "{{productId}}", "disabled": true },
+                { "key": "variant", "value": "", "disabled": true },
+                { "key": "isActive", "value": "true" }
+              ]
+            },
+            "description": "Paginated inventory list.\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Inventory list fetched successfully.\",\n  \"data\": [{ \"_id\": \"...\", \"sku\": \"SKU-1\", \"availableStock\": 100, \"reservedStock\": 0, \"totalStock\": 100, \"reorderLevel\": 10 }],\n  \"pagination\": { \"total\": 1, \"page\": 1, \"limit\": 20, \"totalPages\": 1, \"hasNext\": false, \"hasPrevious\": false }\n}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.[0]?._id) {",
+                  "  pm.collectionVariables.set('inventoryId', json.data[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get Inventory By Id",
+      "item": [
+        {
+          "name": "GET /inventory/:id → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/inventory/{{inventoryId}}",
+            "description": "Complete inventory details.\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Inventory fetched successfully.\",\n  \"data\": { \"_id\": \"...\", \"product\": \"...\", \"sku\": \"SKU-1\", \"availableStock\": 100, \"reservedStock\": 0, \"totalStock\": 100, \"reorderLevel\": 10, \"isActive\": true }\n}"
+          }
+        },
+        {
+          "name": "GET /inventory/:id → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/inventory/507f1f77bcf86cd799439099",
+            "description": "Sample response:\n{\n  \"success\": false,\n  \"message\": \"Inventory not found.\"\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Adjust Stock",
+      "item": [
+        {
+          "name": "PATCH /inventory/:id/adjust → 200",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 10,\n  \"reason\": \"Manual correction\"\n}"
+            },
+            "url": "{{baseUrl}}/inventory/{{inventoryId}}/adjust",
+            "description": "Signed quantity delta. Positive increases availableStock; negative decreases.\nTriggers low-stock check.\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Inventory adjusted successfully.\",\n  \"data\": {\n    \"inventory\": { \"availableStock\": 110 },\n    \"movement\": { \"movementType\": \"ADJUSTMENT\", \"quantity\": 10 },\n    \"previousAvailableStock\": 100,\n    \"newAvailableStock\": 110,\n    \"alert\": null\n  }\n}"
+          }
+        },
+        {
+          "name": "PATCH adjust invalid quantity → 400",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 0,\n  \"reason\": \"Invalid\"\n}"
+            },
+            "url": "{{baseUrl}}/inventory/{{inventoryId}}/adjust",
+            "description": "Sample response:\n{\n  \"success\": false,\n  \"message\": \"Invalid quantity.\"\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reserve Stock",
+      "item": [
+        {
+          "name": "POST /inventory/:id/reserve → 201",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 2,\n  \"referenceType\": \"ORDER\",\n  \"referenceId\": \"{{referenceId}}\",\n  \"expiresAt\": \"2026-12-31T23:59:59.000Z\"\n}"
+            },
+            "url": "{{baseUrl}}/inventory/{{inventoryId}}/reserve",
+            "description": "Creates ACTIVE reservation, RESERVE movement, moves available → reserved.\nDoes not consume/ship stock.\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Stock reserved successfully.\",\n  \"data\": {\n    \"reservation\": { \"_id\": \"...\", \"status\": \"ACTIVE\", \"reservedQuantity\": 2 },\n    \"inventory\": { \"availableStock\": 108, \"reservedStock\": 2 },\n    \"movement\": { \"movementType\": \"RESERVE\", \"quantity\": 2 }\n  }\n}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.reservation?._id) {",
+                  "  pm.collectionVariables.set('reservationId', json.data.reservation._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST reserve insufficient stock → 400",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 999999,\n  \"referenceType\": \"ORDER\",\n  \"referenceId\": \"{{referenceId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/inventory/{{inventoryId}}/reserve",
+            "description": "Sample response:\n{\n  \"success\": false,\n  \"message\": \"Insufficient stock.\"\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Release Reservation",
+      "item": [
+        {
+          "name": "POST /inventory/:id/release → 200",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": \"{{reservationId}}\",\n  \"notes\": \"Order cancelled\"\n}"
+            },
+            "url": "{{baseUrl}}/inventory/{{inventoryId}}/release",
+            "description": "Sets reservation status to RELEASED (history retained), records RELEASE movement, restores availableStock.\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Stock reservation released successfully.\",\n  \"data\": {\n    \"reservation\": { \"status\": \"RELEASED\" },\n    \"inventory\": { \"availableStock\": 110, \"reservedStock\": 0 },\n    \"movement\": { \"movementType\": \"RELEASE\", \"quantity\": 2 }\n  }\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Movement History",
+      "item": [
+        {
+          "name": "GET /inventory/:id/movements → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory/{{inventoryId}}/movements?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["inventory", "{{inventoryId}}", "movements"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "movementType", "value": "ADJUSTMENT", "disabled": true }
+              ]
+            },
+            "description": "Read-only append-only ledger.\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Stock movements fetched successfully.\",\n  \"data\": [{ \"movementType\": \"ADJUSTMENT\", \"quantity\": 10 }],\n  \"pagination\": { \"total\": 1, \"page\": 1, \"limit\": 20, \"totalPages\": 1, \"hasNext\": false, \"hasPrevious\": false }\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Low Stock Alerts",
+      "item": [
+        {
+          "name": "GET /inventory/alerts → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/inventory/alerts",
+            "description": "Active low stock alerts only.\n\nSample response:\n{\n  \"success\": true,\n  \"message\": \"Low stock alerts fetched successfully.\",\n  \"data\": [{ \"status\": \"ACTIVE\", \"currentStock\": 5, \"reorderLevel\": 10, \"message\": \"Low stock: ...\" }]\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth Negative",
+      "item": [
+        {
+          "name": "Unauthorized list → 401",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/inventory"
+          }
+        }
+      ]
+    }
+  ]
+}

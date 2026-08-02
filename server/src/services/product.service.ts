@@ -4,6 +4,7 @@ import {
     ProductStatus,
     StockStatus,
 } from "../interfaces/product.interface";
+import { IProductWithMedia, IProductLeanBase } from "../interfaces/product-media.interface";
 import {
     PRODUCT_SORT_OPTIONS,
     ProductListQuery,
@@ -12,6 +13,10 @@ import {
 } from "../interfaces/product-listing.interface";
 import { BrandStatus } from "../interfaces/brand.interface";
 import { BrandRepository } from "../modules/brand/brand.repository";
+import {
+    toProductMediaSummary,
+} from "../modules/media/interfaces/product-media-summary.interface";
+import { MediaRepository } from "../modules/media/repositories/media.repository";
 import { ProductRepository } from "../repositories/product.repository";
 
 /**
@@ -45,19 +50,21 @@ export interface ProductListInput {
  *
  * Application layer for Product use cases (SRP).
  * Enforces domain rules and delegates persistence to ProductRepository (DIP).
- * Contains no HTTP, validation-schema, or infrastructure concerns.
+ * Attaches Media summaries via MediaRepository (Step 13.6) — no circular imports.
  */
 export class ProductService {
     constructor(
         private readonly productRepository: ProductRepository,
-        private readonly brandRepository: BrandRepository
+        private readonly brandRepository: BrandRepository,
+        private readonly mediaRepository: MediaRepository = new MediaRepository()
     ) {}
 
     /**
      * Creates a product after enforcing SKU/slug uniqueness and Brand existence.
-     * `thumbnail` / `images` must be Cloudinary URL strings when provided.
+     * `thumbnail` / `images` must be Cloudinary URL strings when provided (legacy).
+     * Media ObjectId refs remain empty until Media upload APIs sync them later.
      */
-    async createProduct(data: Partial<IProduct>): Promise<IProduct> {
+    async createProduct(data: Partial<IProduct>): Promise<IProductWithMedia> {
         if (!data.brand) {
             throw new Error("Brand not found.");
         }
@@ -84,61 +91,66 @@ export class ProductService {
             }
         }
 
-        return this.productRepository.create(data);
+        const product = await this.productRepository.create(data);
+        return this.attachMedia(product);
     }
 
     /**
-     * Retrieves a product by id.
+     * Retrieves a product by id with selective Media summaries.
      */
-    async getProductById(id: string | Types.ObjectId): Promise<IProduct> {
+    async getProductById(
+        id: string | Types.ObjectId
+    ): Promise<IProductWithMedia> {
         const product = await this.productRepository.findById(id);
 
         if (!product) {
             throw new Error("Product not found.");
         }
 
-        return product;
+        return this.attachMedia(product);
     }
 
     /**
-     * Retrieves a product by SKU.
+     * Retrieves a product by SKU with selective Media summaries.
      */
-    async getProductBySku(sku: string): Promise<IProduct> {
+    async getProductBySku(sku: string): Promise<IProductWithMedia> {
         const product = await this.productRepository.findBySku(sku);
 
         if (!product) {
             throw new Error("Product not found.");
         }
 
-        return product;
+        return this.attachMedia(product);
     }
 
     /**
-     * Retrieves a product by slug.
+     * Retrieves a product by slug with selective Media summaries.
      */
-    async getProductBySlug(slug: string): Promise<IProduct> {
+    async getProductBySlug(slug: string): Promise<IProductWithMedia> {
         const product = await this.productRepository.findBySlug(slug);
 
         if (!product) {
             throw new Error("Product not found.");
         }
 
-        return product;
+        return this.attachMedia(product);
     }
 
     /**
      * Retrieves products using the caller-provided filter and options.
-     * Preserved for non-listing consumers — no pagination/search applied.
+     * Preserved for non-listing consumers — attaches Media in one batch query.
      */
     async getProducts(
         filter: QueryFilter<IProduct> = {},
         options: QueryOptions = {}
-    ): Promise<IProduct[]> {
-        return this.productRepository.findAll(filter, options);
+    ): Promise<IProductWithMedia[]> {
+        const products = await this.productRepository.findAll(filter, options);
+        return this.attachMediaMany(products);
     }
 
     /**
      * Enterprise product listing with search, filters, sort, and pagination.
+     * Media summaries are batch-loaded to avoid N+1 queries.
      */
     async listProducts(rawQuery: ProductListInput): Promise<ProductListResult> {
         const query = this.normalizeListQuery(rawQuery);
@@ -148,8 +160,10 @@ export class ProductService {
         const totalPages =
             total === 0 ? 0 : Math.ceil(total / query.limit);
 
+        const data = await this.attachMediaMany(items);
+
         return {
-            data: items,
+            data,
             pagination: {
                 total,
                 page: query.page,
@@ -163,13 +177,13 @@ export class ProductService {
 
     /**
      * Updates a product after verifying existence and uniqueness constraints.
-     * `thumbnail` / `images` must be Cloudinary URL strings when provided.
+     * `thumbnail` / `images` must be Cloudinary URL strings when provided (legacy).
      * Brand is validated only when included in the update payload.
      */
     async updateProduct(
         id: string | Types.ObjectId,
         data: Partial<IProduct>
-    ): Promise<IProduct> {
+    ): Promise<IProductWithMedia> {
         const existing = await this.productRepository.findById(id);
 
         if (!existing) {
@@ -206,13 +220,15 @@ export class ProductService {
             throw new Error("Product not found.");
         }
 
-        return updated;
+        return this.attachMedia(updated);
     }
 
     /**
      * Deletes a product after verifying it exists.
      */
-    async deleteProduct(id: string | Types.ObjectId): Promise<IProduct> {
+    async deleteProduct(
+        id: string | Types.ObjectId
+    ): Promise<IProductWithMedia> {
         const existing = await this.productRepository.findById(id);
 
         if (!existing) {
@@ -225,7 +241,7 @@ export class ProductService {
             throw new Error("Product not found.");
         }
 
-        return deleted;
+        return this.attachMedia(deleted);
     }
 
     /**
@@ -242,6 +258,53 @@ export class ProductService {
         filter: QueryFilter<IProduct> = {}
     ): Promise<number> {
         return this.productRepository.count(filter);
+    }
+
+    /**
+     * Attaches selective Media summaries for a single Product.
+     * Media is loaded by productId (Media remains asset owner).
+     */
+    private async attachMedia(product: IProduct): Promise<IProductWithMedia> {
+        const productId = String(product._id);
+        const summaries =
+            await this.mediaRepository.findSummariesByProduct(productId);
+
+        return {
+            ...(product as unknown as IProductLeanBase),
+            media: summaries.map(toProductMediaSummary),
+        };
+    }
+
+    /**
+     * Batch-attaches Media summaries for many Products (one Media query).
+     */
+    private async attachMediaMany(
+        products: IProduct[]
+    ): Promise<IProductWithMedia[]> {
+        if (!products.length) {
+            return [];
+        }
+
+        const productIds = products.map((product) => String(product._id));
+        const summaries =
+            await this.mediaRepository.findSummariesByProductIds(productIds);
+
+        const mediaByProductId = new Map<
+            string,
+            ReturnType<typeof toProductMediaSummary>[]
+        >();
+
+        for (const summary of summaries) {
+            const key = String(summary.productId);
+            const list = mediaByProductId.get(key) ?? [];
+            list.push(toProductMediaSummary(summary));
+            mediaByProductId.set(key, list);
+        }
+
+        return products.map((product) => ({
+            ...(product as unknown as IProductLeanBase),
+            media: mediaByProductId.get(String(product._id)) ?? [],
+        }));
     }
 
     /**
