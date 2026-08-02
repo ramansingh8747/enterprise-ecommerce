@@ -3,6 +3,8 @@ export * from "./constants/coupon.constants";
 export * from "./interfaces/coupon.interface";
 export * from "./interfaces/coupon-repository.interface";
 export * from "./interfaces/coupon-service.interface";
+export * from "./interfaces/coupon-application.interface";
+export * from "./interfaces/coupon-discount.interface";
 export * from "./models/coupon.model";
 export * from "./repositories/coupon.repository";
 export * from "./services/coupon.service";

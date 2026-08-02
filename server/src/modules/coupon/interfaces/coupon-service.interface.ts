@@ -1,4 +1,6 @@
-import { ICouponDocument } from "./coupon.interface";
+import { ICouponApplicationResult } from "./coupon-application.interface";
+import { ICouponDiscountResult } from "./coupon-discount.interface";
+import { ICoupon, ICouponDocument } from "./coupon.interface";
 
 /**
  * Validation context DTO for coupon evaluation.
@@ -11,7 +13,7 @@ export interface IValidateCouponContext {
 
 /**
  * Enterprise Coupon Service Interface.
- * Orchestrates business logic and validation rules.
+ * Orchestrates validation engine, application workflows, and discount calculations.
  */
 export interface ICouponService {
     /**
@@ -24,6 +26,24 @@ export interface ICouponService {
         orderAmount?: number,
         currentDate?: Date
     ): Promise<ICouponDocument>;
+
+    /**
+     * Coordinates the application of a coupon by validating it and returning metadata.
+     * Does NOT calculate discounts, increment usage, or modify database records.
+     */
+    applyCoupon(
+        code: string,
+        orderAmount?: number
+    ): Promise<ICouponApplicationResult>;
+
+    /**
+     * Calculates the exact discount amount for a validated coupon.
+     * Does NOT validate, update usage, write to DB, or modify order totals.
+     */
+    calculateDiscount(
+        coupon: ICouponDocument | ICoupon,
+        orderAmount: number
+    ): ICouponDiscountResult;
 
     /**
      * Retrieves coupon by code via repository.

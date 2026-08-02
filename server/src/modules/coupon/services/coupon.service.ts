@@ -1,14 +1,16 @@
+import { ICouponApplicationResult } from "../interfaces/coupon-application.interface";
+import { ICouponDiscountResult } from "../interfaces/coupon-discount.interface";
 import { ICouponRepository } from "../interfaces/coupon-repository.interface";
 import { ICouponService } from "../interfaces/coupon-service.interface";
-import { ICouponDocument } from "../interfaces/coupon.interface";
+import { ICoupon, ICouponDocument } from "../interfaces/coupon.interface";
 import { CouponRepository } from "../repositories/coupon.repository";
-import { CouponStatus } from "../types/coupon.types";
+import { CouponStatus, DiscountType } from "../types/coupon.types";
 
 /**
- * Enterprise Coupon Validation Engine Service.
+ * Enterprise Coupon Service.
  *
- * Contains core business logic for Coupon validation.
- * Does NOT calculate discount values, apply coupons to orders, or deduct usage.
+ * Orchestrates Coupon validation engine, application workflow, and discount calculation.
+ * Does NOT update database records, increment usage, or modify order totals.
  */
 export class CouponService implements ICouponService {
     constructor(
@@ -85,6 +87,101 @@ export class CouponService implements ICouponService {
         }
 
         return coupon;
+    }
+
+    /**
+     * Coordinates the application of a coupon by validating it and returning metadata.
+     * Does NOT calculate discounts, increment usage, or modify database records.
+     *
+     * @param code Unique coupon code
+     * @param orderAmount Subtotal order amount
+     * @returns ICouponApplicationResult containing coupon parameters for downstream engines
+     */
+    async applyCoupon(
+        code: string,
+        orderAmount?: number
+    ): Promise<ICouponApplicationResult> {
+        const validatedCoupon = await this.validateCoupon(code, orderAmount);
+
+        return {
+            couponId: validatedCoupon._id.toString(),
+            couponCode: validatedCoupon.code,
+            discountType: validatedCoupon.discountType,
+            discountValue: validatedCoupon.discountValue,
+            minimumOrderAmount: validatedCoupon.minimumOrderAmount,
+            maximumDiscountAmount: validatedCoupon.maximumDiscountAmount,
+            isValid: true,
+            message: "Coupon applied successfully.",
+        };
+    }
+
+    /**
+     * Calculates the exact discount amount for a validated coupon.
+     *
+     * 1. PERCENTAGE: (orderAmount * discountValue) / 100, capped at maximumDiscountAmount (if set > 0) and orderAmount.
+     * 2. FIXED: min(discountValue, orderAmount).
+     * 3. FREE_SHIPPING: sets shippingDiscountEligible = true with 0 monetary discount.
+     *
+     * Does NOT perform coupon validation, update usage counts, write to DB, or modify order totals.
+     *
+     * @param coupon Validated Coupon document or ICoupon domain object
+     * @param orderAmount Subtotal order amount
+     * @returns ICouponDiscountResult containing exact calculated discount metrics
+     */
+    calculateDiscount(
+        coupon: ICouponDocument | ICoupon,
+        orderAmount: number
+    ): ICouponDiscountResult {
+        if (typeof orderAmount !== "number" || isNaN(orderAmount) || orderAmount < 0) {
+            throw new Error("Order amount must be a non-negative number.");
+        }
+
+        let calculatedAmount = 0;
+        let shippingDiscountEligible = false;
+
+        switch (coupon.discountType) {
+            case DiscountType.PERCENTAGE: {
+                const rawDiscount = (orderAmount * coupon.discountValue) / 100;
+                let capped = rawDiscount;
+
+                if (
+                    coupon.maximumDiscountAmount !== undefined &&
+                    coupon.maximumDiscountAmount !== null &&
+                    coupon.maximumDiscountAmount > 0
+                ) {
+                    capped = Math.min(capped, coupon.maximumDiscountAmount);
+                }
+
+                calculatedAmount = Math.min(capped, orderAmount);
+                break;
+            }
+
+            case DiscountType.FIXED: {
+                calculatedAmount = Math.min(coupon.discountValue, orderAmount);
+                break;
+            }
+
+            case DiscountType.FREE_SHIPPING: {
+                calculatedAmount = 0;
+                shippingDiscountEligible = true;
+                break;
+            }
+
+            default: {
+                throw new Error(`Unsupported discount type: ${coupon.discountType}`);
+            }
+        }
+
+        const finalDiscount = Math.round((calculatedAmount + Number.EPSILON) * 100) / 100;
+
+        return {
+            discountAmount: finalDiscount,
+            discountType: coupon.discountType,
+            discountValue: coupon.discountValue,
+            shippingDiscountEligible,
+            finalDiscount,
+            message: "Discount calculated successfully.",
+        };
     }
 
     /**
