@@ -219,10 +219,12 @@ couponSchema.pre("validate", function () {
 });
 
 /**
- * Optimized compound indexes for production queries.
+ * Optimized compound and reporting indexes for production queries.
  */
 couponSchema.index({ validFrom: 1, validUntil: 1 });
 couponSchema.index({ status: 1, isActive: 1 });
+couponSchema.index({ validUntil: 1 });
+couponSchema.index({ usageCount: -1 });
 
 /**
  * Export Coupon model with hot-reload prevention.
