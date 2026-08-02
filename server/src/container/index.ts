@@ -22,6 +22,15 @@ import { EmailService } from "../modules/email/services/email.service";
 import { EmailTemplateRenderer } from "../modules/email/templates/renderer/template-renderer";
 import { WelcomeEmailTemplate } from "../modules/email/templates/welcome/welcome-email.template";
 
+import { LocalStorageProvider } from "../modules/file/providers/local.provider";
+import { StorageProviderFactory } from "../modules/file/factories/storage.factory";
+import { NamingStrategy } from "../modules/file/strategies/naming.strategy";
+import { FileRepository } from "../modules/file/repositories/file.repository";
+import { FileService } from "../modules/file/services/file.service";
+import { FileUploadService } from "../modules/file/services/file-upload.service";
+import { FileController } from "../modules/file/controllers/file.controller";
+import { StorageProviderType } from "../modules/file/types/file.types";
+
 const smsProvider = SmsFactory.createProvider();
 
 export const smsService = new SmsService(smsProvider);
@@ -62,3 +71,16 @@ export const reviewController = new ReviewController(reviewService);
 export const notificationRepository = new NotificationRepository();
 export const notificationService = new NotificationService(notificationRepository);
 export const notificationController = new NotificationController(notificationService);
+
+// File Module Central DI Singletons (Module 21.7)
+export const localStorageProvider = new LocalStorageProvider();
+export const storageProviderFactory = new StorageProviderFactory(StorageProviderType.LOCAL);
+export const namingStrategy = new NamingStrategy();
+export const fileRepository = new FileRepository();
+
+// Register LocalStorageProvider strategy in Abstract Storage Factory
+storageProviderFactory.registerProvider(localStorageProvider);
+
+export const fileService = new FileService(storageProviderFactory, namingStrategy);
+export const fileUploadService = new FileUploadService(storageProviderFactory, namingStrategy, fileRepository);
+export const fileController = new FileController(fileUploadService);
