@@ -17,16 +17,35 @@ import { NotificationRepository } from "../modules/notification/repositories/not
 import { NotificationService } from "../modules/notification/services/notification.service";
 import { NotificationController } from "../modules/notification/controllers/notification.controller";
 
+import { MockEmailProvider } from "../modules/email/providers/mock.provider";
+import { EmailService } from "../modules/email/services/email.service";
+import { EmailTemplateRenderer } from "../modules/email/templates/renderer/template-renderer";
+import { WelcomeEmailTemplate } from "../modules/email/templates/welcome/welcome-email.template";
+
 const smsProvider = SmsFactory.createProvider();
 
 export const smsService = new SmsService(smsProvider);
 export const sessionService = new SessionService();
 export const jwtService = new JwtService();
 
+// Email Module Central DI Singletons
+export const mockEmailProvider = new MockEmailProvider();
+export const emailService = new EmailService(mockEmailProvider);
+export const emailTemplateRenderer = new EmailTemplateRenderer();
+export const welcomeEmailTemplate = new WelcomeEmailTemplate();
+
+// Register Welcome Email template in Template Renderer engine
+emailTemplateRenderer.registerTemplate(welcomeEmailTemplate);
+
 console.log("JWT Service Instance:", jwtService);
 console.log("verifyAccessToken:", typeof jwtService.verifyAccessToken);
 
-export const authService = new AuthService(jwtService, sessionService);
+export const authService = new AuthService(
+  jwtService,
+  sessionService,
+  emailService,
+  emailTemplateRenderer
+);
 export const otpService = new OtpService(smsService);
 
 // Wishlist Module Central DI Singletons
