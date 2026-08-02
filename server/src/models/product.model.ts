@@ -230,6 +230,13 @@ productSchema.index({ createdAt: -1 });
 productSchema.index({ name: 1 });
 
 /**
+ * High performance compound indexes for catalog search & filtering queries.
+ */
+productSchema.index({ status: 1, category: 1, price: 1 });
+productSchema.index({ status: 1, brand: 1, price: 1 });
+productSchema.index({ status: 1, price: 1 });
+
+/**
  * Full-text search index for catalog and SEO discovery.
  */
 productSchema.index(

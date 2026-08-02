@@ -15,6 +15,7 @@ import wishlistRoutes from "./modules/wishlist/routes/wishlist.routes";
 import reviewRoutes from "./modules/review/routes/review.routes";
 import notificationRoutes from "./modules/notification/routes/notification.routes";
 import fileRoutes from "./modules/file/routes/file.routes";
+import searchRoutes from "./modules/search/routes/search.routes";
 import { errorHandler } from "./middleware/error.middleware";
 
 const app = express();
@@ -44,6 +45,8 @@ app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 // File Upload APIs (Module 21.7) — /api/v1/files
 app.use("/api/v1/files", fileRoutes);
+// Search, Filtering & Pagination API (Module 22.6) — /api/v1/search
+app.use("/api/v1/search", searchRoutes);
 
 // Root Route
 app.get("/", (req, res) => {

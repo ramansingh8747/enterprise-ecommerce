@@ -31,6 +31,10 @@ import { FileUploadService } from "../modules/file/services/file-upload.service"
 import { FileController } from "../modules/file/controllers/file.controller";
 import { StorageProviderType } from "../modules/file/types/file.types";
 
+import { SearchRepository } from "../modules/search/repositories/search.repository";
+import { SearchService } from "../modules/search/services/search.service";
+import { SearchController } from "../modules/search/controllers/search.controller";
+
 const smsProvider = SmsFactory.createProvider();
 
 export const smsService = new SmsService(smsProvider);
@@ -84,3 +88,8 @@ storageProviderFactory.registerProvider(localStorageProvider);
 export const fileService = new FileService(storageProviderFactory, namingStrategy);
 export const fileUploadService = new FileUploadService(storageProviderFactory, namingStrategy, fileRepository);
 export const fileController = new FileController(fileUploadService);
+
+// Search Module DI Singletons
+export const searchRepository = new SearchRepository();
+export const searchService = new SearchService(searchRepository);
+export const searchController = new SearchController(searchService);
