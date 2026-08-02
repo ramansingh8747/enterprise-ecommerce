@@ -1,39 +1,46 @@
 /**
- * SMS notification provider placeholder (Step 15.9).
- * No Twilio / MSG91 integration in this step.
+ * SMS notification provider placeholder (Step 15.9 / Module 19.1).
  */
 
 import {
-    SendNotificationRequest,
-    SendNotificationResponse,
+  SendNotificationRequest,
+  SendNotificationResponse,
 } from "../dto/notification.dto";
 import { INotificationProvider } from "../interfaces/notification-provider.interface";
 import { NotificationChannel } from "../types/notification.types";
+import { NotificationPayload } from "../interfaces/notification-payload.interface";
+import { NotificationResult } from "../interfaces/notification-result.interface";
 
 export class SmsNotificationProvider implements INotificationProvider {
-    readonly name = NotificationChannel.SMS;
+  readonly providerName = 'SmsNotificationProvider';
+  readonly channel = NotificationChannel.SMS;
+  readonly name = NotificationChannel.SMS;
 
-    async send(
-        _data: SendNotificationRequest
-    ): Promise<SendNotificationResponse> {
-        throw new Error("Not Implemented");
-    }
+  supports(channel: NotificationChannel): boolean {
+    return channel === NotificationChannel.SMS;
+  }
 
-    async sendEmail(
-        _data: SendNotificationRequest
-    ): Promise<SendNotificationResponse> {
-        throw new Error("Not Implemented");
-    }
+  async send(
+    _payload: NotificationPayload | SendNotificationRequest
+  ): Promise<NotificationResult | SendNotificationResponse> {
+    throw new Error("Not Implemented");
+  }
 
-    async sendSMS(
-        _data: SendNotificationRequest
-    ): Promise<SendNotificationResponse> {
-        throw new Error("Not Implemented");
-    }
+  async sendEmail(
+    _data: SendNotificationRequest
+  ): Promise<SendNotificationResponse> {
+    throw new Error("Not Implemented");
+  }
 
-    async sendPush(
-        _data: SendNotificationRequest
-    ): Promise<SendNotificationResponse> {
-        throw new Error("Not Implemented");
-    }
+  async sendSMS(
+    _data: SendNotificationRequest
+  ): Promise<SendNotificationResponse> {
+    throw new Error("Not Implemented");
+  }
+
+  async sendPush(
+    _data: SendNotificationRequest
+  ): Promise<SendNotificationResponse> {
+    throw new Error("Not Implemented");
+  }
 }

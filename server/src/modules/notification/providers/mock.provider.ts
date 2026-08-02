@@ -1,38 +1,46 @@
 /**
- * Mock notification provider placeholder (Step 15.9).
+ * Mock notification provider placeholder (Step 15.9 / Module 19.1).
  */
 
 import {
-    SendNotificationRequest,
-    SendNotificationResponse,
+  SendNotificationRequest,
+  SendNotificationResponse,
 } from "../dto/notification.dto";
 import { INotificationProvider } from "../interfaces/notification-provider.interface";
 import { NotificationChannel } from "../types/notification.types";
+import { NotificationPayload } from "../interfaces/notification-payload.interface";
+import { NotificationResult } from "../interfaces/notification-result.interface";
 
 export class MockNotificationProvider implements INotificationProvider {
-    readonly name = NotificationChannel.MOCK;
+  readonly providerName = 'MockNotificationProvider';
+  readonly channel = NotificationChannel.MOCK;
+  readonly name = NotificationChannel.MOCK;
 
-    async send(
-        _data: SendNotificationRequest
-    ): Promise<SendNotificationResponse> {
-        throw new Error("Not Implemented");
-    }
+  supports(channel: NotificationChannel): boolean {
+    return channel === NotificationChannel.MOCK;
+  }
 
-    async sendEmail(
-        _data: SendNotificationRequest
-    ): Promise<SendNotificationResponse> {
-        throw new Error("Not Implemented");
-    }
+  async send(
+    _payload: NotificationPayload | SendNotificationRequest
+  ): Promise<NotificationResult | SendNotificationResponse> {
+    throw new Error("Not Implemented");
+  }
 
-    async sendSMS(
-        _data: SendNotificationRequest
-    ): Promise<SendNotificationResponse> {
-        throw new Error("Not Implemented");
-    }
+  async sendEmail(
+    _data: SendNotificationRequest
+  ): Promise<SendNotificationResponse> {
+    throw new Error("Not Implemented");
+  }
 
-    async sendPush(
-        _data: SendNotificationRequest
-    ): Promise<SendNotificationResponse> {
-        throw new Error("Not Implemented");
-    }
+  async sendSMS(
+    _data: SendNotificationRequest
+  ): Promise<SendNotificationResponse> {
+    throw new Error("Not Implemented");
+  }
+
+  async sendPush(
+    _data: SendNotificationRequest
+  ): Promise<SendNotificationResponse> {
+    throw new Error("Not Implemented");
+  }
 }

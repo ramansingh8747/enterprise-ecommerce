@@ -10,6 +10,9 @@ import variantRoutes, {
 import { productMediaRoutes } from "./modules/media/routes/media.routes";
 import inventoryRoutes from "./modules/inventory/routes/inventory.routes";
 import orderRoutes from "./modules/order/routes/order.routes";
+import wishlistRoutes from "./modules/wishlist/routes/wishlist.routes";
+import reviewRoutes from "./modules/review/routes/review.routes";
+import notificationRoutes from "./modules/notification/routes/notification.routes";
 import { errorHandler } from "./middleware/error.middleware";
 
 
@@ -29,6 +32,12 @@ app.use("/api/v1/variants", variantRoutes);
 app.use("/api/v1/inventory", inventoryRoutes);
 // Order APIs (Module 15.4) — requires mount so POST /orders is reachable
 app.use("/api/v1/orders", orderRoutes);
+// Wishlist APIs (Module 17.5) — POST /api/v1/wishlist
+app.use("/api/v1/wishlist", wishlistRoutes);
+// Reviews & Ratings APIs (Module 18.6) — /api/v1/reviews
+app.use("/api/v1/reviews", reviewRoutes);
+// Notification APIs (Module 19.6) — /api/v1/notifications
+app.use("/api/v1/notifications", notificationRoutes);
 
 // Root Route
 app.get("/", (req, res) => {

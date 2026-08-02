@@ -10,7 +10,8 @@ const resolveStatusCode = (message: string): number => {
 
     if (
         normalized.includes("not found") ||
-        normalized.includes("does not exist")
+        normalized.includes("does not exist") ||
+        normalized.includes("not present")
     ) {
         return 404;
     }
@@ -30,7 +31,10 @@ const resolveStatusCode = (message: string): number => {
         normalized.includes("must be") ||
         normalized.includes("required") ||
         normalized.includes("insufficient stock") ||
+        normalized.includes("out of stock") ||
         normalized.includes("quantity must") ||
+        normalized.includes("capacity") ||
+        normalized.includes("limit") ||
         normalized.includes("invalid")
     ) {
         return 400;
