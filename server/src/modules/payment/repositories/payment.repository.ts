@@ -1,38 +1,84 @@
+import { IPaymentDocument } from '../models/payment.model';
+import { PaymentFilters, PaymentPagination } from '../types/payment.types';
+
 /**
- * Payment repository placeholder (Step 15.6).
+ * Enterprise Payment Repository Contract (Module 27.2).
  *
- * No persistence logic in this step.
+ * Pluggable repository boundary defining data access contracts for payment persistence.
+ * Implements Dependency Inversion Principle.
  */
+export interface IPaymentRepository {
+  /**
+   * Creates and persists a new payment transaction record.
+   *
+   * @param data Initial payment document parameters.
+   */
+  create(data: Partial<IPaymentDocument>): Promise<IPaymentDocument>;
 
-import { IPaymentRepository } from "../interfaces/payment-repository.interface";
+  /**
+   * Bulk creates multiple payment transaction records.
+   *
+   * @param data Array of initial payment document parameters.
+   */
+  createMany(data: Array<Partial<IPaymentDocument>>): Promise<IPaymentDocument[]>;
 
-/**
- * Enterprise Payment Repository — persistence-only boundary (future).
- */
-export class PaymentRepository implements IPaymentRepository {
-    async create(_data: unknown): Promise<unknown> {
-        throw new Error("PaymentRepository.create is not implemented yet.");
-    }
+  /**
+   * Updates an existing payment transaction record by MongoDB _id or paymentId.
+   *
+   * @param id MongoDB Object ID string or paymentId.
+   * @param update Partial update fields.
+   */
+  update(id: string, update: Partial<IPaymentDocument>): Promise<IPaymentDocument | null>;
 
-    async findById(_id: string): Promise<unknown | null> {
-        throw new Error("PaymentRepository.findById is not implemented yet.");
-    }
+  /**
+   * Queries paginated payment records matching filters and sorting parameters.
+   *
+   * @param filters Criteria filters (orderId, customerId, status, etc.).
+   * @param pagination Page, limit, sortBy, sortOrder options.
+   */
+  find(
+    filters: PaymentFilters,
+    pagination: PaymentPagination
+  ): Promise<{
+    items: IPaymentDocument[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }>;
 
-    async findByOrderId(_orderId: string): Promise<unknown | null> {
-        throw new Error(
-            "PaymentRepository.findByOrderId is not implemented yet."
-        );
-    }
+  /**
+   * Retrieves a single payment record by MongoDB _id.
+   *
+   * @param id Target MongoDB Object ID string.
+   */
+  findById(id: string): Promise<IPaymentDocument | null>;
 
-    async findByProviderTransactionId(
-        _providerTransactionId: string
-    ): Promise<unknown | null> {
-        throw new Error(
-            "PaymentRepository.findByProviderTransactionId is not implemented yet."
-        );
-    }
+  /**
+   * Retrieves a single payment record by system paymentId (e.g. 'pay_18c5e2a9_4f8b2c1d').
+   *
+   * @param paymentId Unique paymentId string.
+   */
+  findByPaymentId(paymentId: string): Promise<IPaymentDocument | null>;
 
-    async updateById(_id: string, _data: unknown): Promise<unknown | null> {
-        throw new Error("PaymentRepository.updateById is not implemented yet.");
-    }
+  /**
+   * Executes custom MongoDB aggregation pipelines for analytical statistics.
+   *
+   * @param pipeline Array of aggregation pipeline stage objects.
+   */
+  aggregate<T = unknown>(pipeline: unknown[]): Promise<T[]>;
+
+  /**
+   * Counts total payment records matching optional criteria filters.
+   *
+   * @param filters Criteria filters.
+   */
+  count(filters?: PaymentFilters): Promise<number>;
+
+  /**
+   * Purges expired or abandoned payment records older than cutoff date.
+   *
+   * @param olderThan Cutoff Date threshold.
+   */
+  cleanup(olderThan: Date): Promise<number>;
 }

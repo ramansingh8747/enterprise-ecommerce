@@ -1,31 +1,68 @@
 /**
- * Enterprise Payment Module public barrel (Step 15.6).
+ * Enterprise Payment Gateway Module — Barrel Export (Module 27.1 – 27.5).
  *
- * Re-exports architecture foundations only.
- * Routes are not mounted in app.ts yet.
+ * Re-exports all public module members following clean architecture standards.
+ * Allows consumers to import from the module root:
+ *   import { PaymentController, WebhookController, PaymentService, WebhookService } from '../modules/payment';
  */
 
-export * from "./types/payment.types";
-export * from "./constants/payment.constants";
-export * from "./interfaces/payment.interface";
-export * from "./interfaces/payment-provider.interface";
-export * from "./interfaces/payment-repository.interface";
-export * from "./interfaces/payment-service.interface";
-export * from "./dto/payment.dto";
-export * from "./factory/payment-provider.factory";
-export * from "./providers/mock.provider";
-export * from "./providers/razorpay.provider";
-export * from "./providers/stripe.provider";
-export * from "./providers/cashfree.provider";
-export * from "./validations/payment.validation";
-export * from "./repositories/payment.repository";
-export * from "./services/payment.service";
-export * from "./controllers/payment.controller";
-export * from "./models/payment.model";
+// Enums
+export * from './enums/payment.enums';
 
-export { default as paymentRoutes } from "./routes/payment.routes";
-export {
-    paymentRepository,
-    paymentService,
-    paymentController,
-} from "./routes/payment.routes";
+// Constants
+export * from './constants/payment.constants';
+
+// Config
+export * from './config/payment.config';
+
+// Interfaces
+export * from './interfaces/payment.interfaces';
+
+// Types
+export * from './types/payment.types';
+
+// DTOs
+export * from './dto/payment-create.dto';
+export * from './dto/payment-capture.dto';
+export * from './dto/payment-refund.dto';
+export * from './dto/payment-query.dto';
+export * from './dto/webhook.dto';
+
+// Models
+export * from './models/payment.model';
+
+// Repositories
+export * from './repositories/payment.repository';
+export * from './repositories/mongo-payment.repository';
+
+// Providers
+export * from './providers/payment.provider';
+export * from './providers/mock-payment.provider';
+export * from './providers/provider.registry';
+export * from './providers/payment.factory';
+
+// Services
+export * from './services/payment.service';
+
+// Controllers
+export * from './controllers/payment.controller';
+export * from './controllers/webhook.controller';
+
+// Validators
+export * from './validators/payment.validator';
+export * from './validators/webhook.validator';
+
+// Webhooks
+export * from './webhooks/webhook.validator';
+export * from './webhooks/webhook.processor';
+export * from './webhooks/webhook.service';
+
+// Callbacks
+export * from './callbacks/callback.handler';
+
+// Utils
+export * from './utils/payment.util';
+
+// Routers (default exports — matches pattern of other module barrels)
+export { default as paymentRoutes } from './routes/payment.routes';
+export { default as webhookRoutes } from './routes/webhook.routes';

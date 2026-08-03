@@ -1,50 +1,78 @@
+import { PaymentMethod, PaymentProvider, PaymentStatus } from '../enums/payment.enums';
+
+export { PaymentMethod, PaymentProvider, PaymentStatus } from '../enums/payment.enums';
+
+/** Backward compatibility type and value aliases for legacy code. */
+export type PaymentCurrency = string;
+export const PaymentProviderType = PaymentProvider;
+export type PaymentProviderType = PaymentProvider;
+
 /**
- * Enterprise Payment Module — shared enums / types (Step 15.6).
+ * Enterprise Payment Gateway Module — Shared Types (Module 27.1).
  *
- * Shape-only contracts. No gateway or webhook logic.
+ * Core domain query filters, pagination, metrics, context, and summary shapes.
  */
 
 /**
- * Supported payment gateway identifiers (factory keys).
+ * Filter options for querying payment records.
  */
-export enum PaymentProviderType {
-    MOCK = "mock",
-    RAZORPAY = "razorpay",
-    STRIPE = "stripe",
-    CASHFREE = "cashfree",
-}
+export type PaymentFilters = {
+  orderId?: string;
+  customerId?: string;
+  status?: PaymentStatus;
+  provider?: PaymentProvider;
+  method?: PaymentMethod;
+  startDate?: Date;
+  endDate?: Date;
+  search?: string;
+};
 
 /**
- * Customer-facing payment method categories.
+ * Pagination options for payment lists.
  */
-export enum PaymentMethod {
-    CARD = "CARD",
-    UPI = "UPI",
-    NET_BANKING = "NET_BANKING",
-    WALLET = "WALLET",
-    COD = "COD",
-    BANK_TRANSFER = "BANK_TRANSFER",
-}
+export type PaymentPagination = {
+  page: number;
+  limit: number;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
+};
 
 /**
- * Payment lifecycle status (Payment module domain).
- * Order.paymentStatus remains the order-facing mirror (Order module).
+ * Combined options for payment search requests.
  */
-export enum PaymentStatus {
-    PENDING = "PENDING",
-    AUTHORIZED = "AUTHORIZED",
-    PAID = "PAID",
-    FAILED = "FAILED",
-    CANCELLED = "CANCELLED",
-    REFUNDED = "REFUNDED",
-    PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED",
-}
+export type PaymentSearchOptions = {
+  filters?: PaymentFilters;
+  pagination?: PaymentPagination;
+};
 
 /**
- * ISO-style currency codes used by Payment operations.
+ * Summary card metrics for payment dashboards.
  */
-export enum PaymentCurrency {
-    INR = "INR",
-    USD = "USD",
-    EUR = "EUR",
-}
+export type PaymentSummary = {
+  totalAmount: number;
+  totalCount: number;
+  successfulCount: number;
+  failedCount: number;
+  totalRefunded: number;
+};
+
+/**
+ * Analytical metrics tracking gateway performance.
+ */
+export type PaymentMetrics = {
+  totalVolume: number;
+  successRate: number;
+  averageTransactionValue: number;
+  totalRefundsCount: number;
+};
+
+/**
+ * Execution context tracing client requests.
+ */
+export type PaymentContext = {
+  requestId?: string;
+  correlationId?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  userId?: string;
+};
