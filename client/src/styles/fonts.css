@@ -1,0 +1,12 @@
+/* Enterprise Fonts Specification & Self-Hosted Font-Face Declarations (Module 3 - Step 3.3) */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Fallback font-face overrides for offline/enterprise deployments */
+@font-face {
+  font-family: 'Inter-Fallback';
+  src: local('Arial');
+  ascent-override: 90%;
+  descent-override: 20%;
+  line-gap-override: 0%;
+}
