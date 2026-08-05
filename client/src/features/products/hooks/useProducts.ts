@@ -10,14 +10,14 @@ import type { IProduct } from '../types/products.types';
  * refetch callbacks, and timestamp updates.
  */
 export function useProducts() {
-  const { data, isLoading, isFetching, error, refetch } = useGetProductsQuery();
+  const { data, isLoading, isFetching, error, refetch } = useGetProductsQuery({});
   const [lastRefetchedTimestamp, setLastRefetchedTimestamp] = useState<string | null>(null);
 
   const mappedProducts = useMemo<IProduct[]>(() => {
-    if (!data?.data?.products) {
+    if (!data?.data?.data) {
       return [];
     }
-    return mapBackendProductsToFrontend(data.data.products);
+    return mapBackendProductsToFrontend(data.data.data);
   }, [data]);
 
   // Update success timestamp on query loaded changes

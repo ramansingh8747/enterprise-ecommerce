@@ -19,14 +19,24 @@ import { Link } from 'react-router-dom';
 import { DataTable } from '@/shared/components/table/DataTable/DataTable';
 import type { IDataTableColumn, IBulkAction } from '@/shared/components/table/DataTable/DataTable.types';
 import { formatCurrency } from '@/shared/helpers/formatter.helper';
-import { useProducts } from '@/features/products/hooks/useProducts';
+import { useProductTable } from '@/features/products/hooks/useProductTable';
 import type { IProduct } from '@/features/products/types/products.types';
 
 /**
  * Enterprise DataTable Demonstration Page Component (Module 10 - Step 10.10).
  */
 export const DataTableDemo: React.FC = () => {
-  const { products, isLoading, isFetching } = useProducts();
+  const {
+    data: products,
+    loading,
+    paginationState,
+    onPageChange,
+    onPageSizeChange,
+    searchQuery,
+    onSearchQueryChange,
+    filters,
+    onFilterChange,
+  } = useProductTable();
   const [simulateLoading, setSimulateLoading] = useState(false);
   const [simulateEmpty, setSimulateEmpty] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -186,8 +196,6 @@ export const DataTableDemo: React.FC = () => {
     },
   ];
 
-  const tableData = simulateEmpty ? [] : products;
-
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
       <Stack spacing={4}>
@@ -246,12 +254,20 @@ export const DataTableDemo: React.FC = () => {
         {/* Data Table */}
         <Box>
           <DataTable
-            data={tableData}
+            data={simulateEmpty ? [] : products}
             columns={columns}
             rowKey={(row) => row.id}
-            loading={simulateLoading || isLoading || isFetching}
+            loading={simulateLoading || loading}
+            pagination
+            paginationState={paginationState}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
             search
+            searchQuery={searchQuery}
+            onSearchQueryChange={onSearchQueryChange}
             filterable
+            filters={filters}
+            onFilterChange={onFilterChange}
             selection
             bulkActions={bulkActions}
             hover

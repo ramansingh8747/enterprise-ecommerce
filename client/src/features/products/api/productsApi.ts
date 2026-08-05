@@ -9,8 +9,29 @@ import type { ApiSuccessResponse } from '@/services/api/response.types';
  */
 export const productsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getProducts: builder.query<ApiSuccessResponse<ISearchResponse>, void>({
-      query: () => '/search?limit=100', // Retrieve up to 100 products for complete client-side pagination demo
+    getProducts: builder.query<
+      ApiSuccessResponse<ISearchResponse>,
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        category?: string;
+        brand?: string;
+        sort?: string;
+      } | void
+    >({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params && typeof params === 'object') {
+            if (params.page) queryParams.append('page', params.page.toString());
+            if (params.limit) queryParams.append('limit', params.limit.toString());
+            if (params.search) queryParams.append('search', params.search);
+            if (params.category) queryParams.append('category', params.category);
+            if (params.brand) queryParams.append('brand', params.brand);
+            if (params.sort) queryParams.append('sort', params.sort);
+        }
+        return `/search?${queryParams.toString()}`;
+      },
       providesTags: ['Product'],
     }),
   }),
