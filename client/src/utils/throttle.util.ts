@@ -3,7 +3,7 @@
  *
  * Wraps a function to limit execution to at most once per limitMs milliseconds.
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   limitMs: number
 ): (...args: Parameters<T>) => void {

@@ -1,6 +1,9 @@
 import type { EndpointBuilder } from '@reduxjs/toolkit/query';
+import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 
-export type EndpointInjector = (builder: EndpointBuilder<any, any, any>) => Record<string, unknown>;
+export type EndpointInjector = (
+  builder: EndpointBuilder<BaseQueryFn, string, string>
+) => Record<string, unknown>;
 
 /**
  * Open/Closed Endpoint Registry (Module 6 - Step 6.5).

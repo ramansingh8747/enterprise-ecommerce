@@ -9,7 +9,7 @@ export interface IAuthFooterProps {
  *
  * Legal and navigation links for authentication pages.
  */
-const AuthFooter: React.FC<IAuthFooterProps> = (_props) => {
+const AuthFooter: React.FC<IAuthFooterProps> = () => {
   return <div data-testid="auth-footer" />;
 };
 

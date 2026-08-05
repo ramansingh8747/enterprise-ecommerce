@@ -18,7 +18,10 @@ export function mapBackendProductToFrontend(product: IBackendProduct): IProduct 
   let formattedDate = '2026-01-01';
   try {
     if (product.createdAt) {
-      formattedDate = product.createdAt.split('T')[0];
+      const parts = product.createdAt.split('T');
+      if (parts[0]) {
+        formattedDate = parts[0];
+      }
     }
   } catch {
     // Fallback if date is invalid

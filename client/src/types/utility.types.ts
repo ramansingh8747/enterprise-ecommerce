@@ -17,4 +17,4 @@ export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<
   }[Keys];
 
 /** Readonly Record dictionary type. */
-export type ReadonlyRecord<K extends keyof any, V> = Readonly<Record<K, V>>;
+export type ReadonlyRecord<K extends PropertyKey, V> = Readonly<Record<K, V>>;

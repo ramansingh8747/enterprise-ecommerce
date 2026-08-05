@@ -17,4 +17,4 @@ export interface IGroupedOption<T = string> {
 }
 
 /** Standard UI Select Option. */
-export interface ISelectOption extends IOption<string> {}
+export type ISelectOption = IOption<string>;

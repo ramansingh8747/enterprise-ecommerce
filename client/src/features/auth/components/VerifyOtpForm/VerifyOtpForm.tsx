@@ -9,7 +9,7 @@ export interface IVerifyOtpFormProps {
 /**
  * Verify OTP Form Component Placeholder (Module 7 - Step 7.5).
  */
-const VerifyOtpForm: React.FC<IVerifyOtpFormProps> = (_props) => {
+const VerifyOtpForm: React.FC<IVerifyOtpFormProps> = () => {
   return <div data-testid="verify-otp-form" />;
 };
 

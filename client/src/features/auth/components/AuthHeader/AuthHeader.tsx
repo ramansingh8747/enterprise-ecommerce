@@ -10,7 +10,7 @@ export interface IAuthHeaderProps {
  *
  * Branding and title section for authentication pages.
  */
-const AuthHeader: React.FC<IAuthHeaderProps> = (_props) => {
+const AuthHeader: React.FC<IAuthHeaderProps> = () => {
   return <div data-testid="auth-header" />;
 };
 

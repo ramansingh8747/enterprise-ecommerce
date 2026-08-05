@@ -19,46 +19,14 @@ import { Link } from 'react-router-dom';
 import { DataTable } from '@/shared/components/table/DataTable/DataTable';
 import type { IDataTableColumn, IBulkAction } from '@/shared/components/table/DataTable/DataTable.types';
 import { formatCurrency } from '@/shared/helpers/formatter.helper';
+import { useProducts } from '@/features/products/hooks/useProducts';
+import type { IProduct } from '@/features/products/types/products.types';
 
 /**
- * Product Data Contract interface definition.
- */
-export interface IProduct {
-  readonly id: string;
-  readonly name: string;
-  readonly sku: string;
-  readonly price: number;
-  readonly status: 'active' | 'draft' | 'out_of_stock';
-  readonly stock: number;
-  readonly createdAt: string;
-}
-
-// 18 Sample product records
-const MOCK_PRODUCTS: readonly IProduct[] = Object.freeze([
-  { id: 'PROD-001', name: 'iPhone 14 Pro Max', sku: 'APL-IPH14PM-256', price: 1199.0, status: 'active', stock: 45, createdAt: '2026-05-12' },
-  { id: 'PROD-002', name: 'MacBook Pro 16" M2', sku: 'APL-MBP16M2-512', price: 2499.0, status: 'active', stock: 12, createdAt: '2026-06-20' },
-  { id: 'PROD-003', name: 'Sony WH-1000XM5', sku: 'SNY-WH1000XM5-B', price: 348.0, status: 'active', stock: 85, createdAt: '2026-07-01' },
-  { id: 'PROD-004', name: 'Dell XPS 15 Laptop', sku: 'DLL-XPS15-9530', price: 1899.0, status: 'draft', stock: 8, createdAt: '2026-04-18' },
-  { id: 'PROD-005', name: 'iPad Pro 12.9" M2', sku: 'APL-IPP129M2-128', price: 1099.0, status: 'out_of_stock', stock: 0, createdAt: '2026-03-29' },
-  { id: 'PROD-006', name: 'Nintendo Switch OLED', sku: 'NIN-SWOLED-WHT', price: 349.99, status: 'active', stock: 32, createdAt: '2026-05-25' },
-  { id: 'PROD-007', name: 'Samsung Galaxy S23 Ultra', sku: 'SAM-GALS23U-512', price: 1199.99, status: 'active', stock: 24, createdAt: '2026-02-14' },
-  { id: 'PROD-008', name: 'Bose QuietComfort Earbuds II', sku: 'BSE-QCEB2-SND', price: 299.0, status: 'draft', stock: 15, createdAt: '2026-07-10' },
-  { id: 'PROD-009', name: 'Apple Watch Ultra', sku: 'APL-AWU-49', price: 799.0, status: 'active', stock: 9, createdAt: '2026-01-05' },
-  { id: 'PROD-010', name: 'Sony PlayStation 5', sku: 'SNY-PS5-DISC', price: 499.99, status: 'out_of_stock', stock: 0, createdAt: '2026-03-10' },
-  { id: 'PROD-011', name: 'Keychron Q1 Mechanical Keyboard', sku: 'KEY-Q1MKB-BLU', price: 169.0, status: 'active', stock: 55, createdAt: '2026-06-05' },
-  { id: 'PROD-012', name: 'Logitech MX Master 3S', sku: 'LOG-MXM3S-GRY', price: 99.99, status: 'active', stock: 120, createdAt: '2026-06-15' },
-  { id: 'PROD-013', name: 'Asus ROG Zephyrus G14', sku: 'ASU-ZEP-G14-9', price: 1599.0, status: 'draft', stock: 4, createdAt: '2026-07-22' },
-  { id: 'PROD-014', name: 'GoPro HERO11 Black', sku: 'GPR-H11BLK-001', price: 399.0, status: 'active', stock: 28, createdAt: '2026-05-30' },
-  { id: 'PROD-015', name: 'Canon EOS R5 Mirrorless', sku: 'CAN-EOSR5-BODY', price: 3899.0, status: 'active', stock: 3, createdAt: '2026-02-28' },
-  { id: 'PROD-016', name: 'DJI Mini 3 Pro Drone', sku: 'DJI-MN3PRO-RC', price: 759.0, status: 'active', stock: 18, createdAt: '2026-06-12' },
-  { id: 'PROD-017', name: 'Oculus Quest 2 VR Headset', sku: 'OCL-QST2-128', price: 299.99, status: 'draft', stock: 40, createdAt: '2026-04-10' },
-  { id: 'PROD-018', name: 'Sonos One (Gen 2) Speaker', sku: 'SNS-ONEG2-WHT', price: 219.0, status: 'out_of_stock', stock: 0, createdAt: '2026-01-20' },
-]);
-
-/**
- * Enterprise DataTable Demonstration Page Component (Module 10 - Step 10.3).
+ * Enterprise DataTable Demonstration Page Component (Module 10 - Step 10.10).
  */
 export const DataTableDemo: React.FC = () => {
+  const { products, isLoading, isFetching } = useProducts();
   const [simulateLoading, setSimulateLoading] = useState(false);
   const [simulateEmpty, setSimulateEmpty] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -218,7 +186,7 @@ export const DataTableDemo: React.FC = () => {
     },
   ];
 
-  const tableData = simulateEmpty ? [] : [...MOCK_PRODUCTS];
+  const tableData = simulateEmpty ? [] : products;
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
@@ -239,7 +207,7 @@ export const DataTableDemo: React.FC = () => {
               Data Table Demo
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Enterprise generic DataTable rendering demonstration showcasing column configurations, custom cell rendering, and status loaders.
+              Enterprise generic DataTable rendering demonstration showcasing column configurations, custom cell rendering, and real API data fetching.
             </Typography>
           </Box>
         </Stack>
@@ -281,7 +249,7 @@ export const DataTableDemo: React.FC = () => {
             data={tableData}
             columns={columns}
             rowKey={(row) => row.id}
-            loading={simulateLoading}
+            loading={simulateLoading || isLoading || isFetching}
             search
             filterable
             selection

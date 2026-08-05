@@ -7,7 +7,7 @@ export interface ILoginFormProps {
 /**
  * Login Form Component Placeholder (Module 7 - Step 7.5).
  */
-const LoginForm: React.FC<ILoginFormProps> = (_props) => {
+const LoginForm: React.FC<ILoginFormProps> = () => {
   return <div data-testid="login-form" />;
 };
 

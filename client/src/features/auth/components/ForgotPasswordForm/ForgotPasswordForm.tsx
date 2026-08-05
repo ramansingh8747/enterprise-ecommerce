@@ -7,7 +7,7 @@ export interface IForgotPasswordFormProps {
 /**
  * Forgot Password Form Component Placeholder (Module 7 - Step 7.5).
  */
-const ForgotPasswordForm: React.FC<IForgotPasswordFormProps> = (_props) => {
+const ForgotPasswordForm: React.FC<IForgotPasswordFormProps> = () => {
   return <div data-testid="forgot-password-form" />;
 };
 

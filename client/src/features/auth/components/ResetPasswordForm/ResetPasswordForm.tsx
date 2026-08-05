@@ -8,7 +8,7 @@ export interface IResetPasswordFormProps {
 /**
  * Reset Password Form Component Placeholder (Module 7 - Step 7.5).
  */
-const ResetPasswordForm: React.FC<IResetPasswordFormProps> = (_props) => {
+const ResetPasswordForm: React.FC<IResetPasswordFormProps> = () => {
   return <div data-testid="reset-password-form" />;
 };
 

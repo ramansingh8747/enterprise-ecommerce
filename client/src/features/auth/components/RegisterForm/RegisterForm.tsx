@@ -7,7 +7,7 @@ export interface IRegisterFormProps {
 /**
  * Register Form Component Placeholder (Module 7 - Step 7.5).
  */
-const RegisterForm: React.FC<IRegisterFormProps> = (_props) => {
+const RegisterForm: React.FC<IRegisterFormProps> = () => {
   return <div data-testid="register-form" />;
 };
 
