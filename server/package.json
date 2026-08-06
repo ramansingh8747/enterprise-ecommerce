@@ -19,7 +19,8 @@
     "test:inventory:validators": "ts-node --transpile-only scripts/e2e-inventory.validators.ts",
     "test:inventory:service": "ts-node --transpile-only scripts/e2e-inventory.service.ts",
     "test:inventory:e2e": "ts-node --transpile-only scripts/e2e-inventory.smoke.ts",
-    "test:inventory:e2e:seeded": "ts-node --transpile-only scripts/run-inventory-e2e.ts"
+    "test:inventory:e2e:seeded": "ts-node --transpile-only scripts/run-inventory-e2e.ts",
+    "seed:products": "ts-node --transpile-only scripts/seed-products.ts"
   },
   "keywords": [
     "express",

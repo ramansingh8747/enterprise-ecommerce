@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import MuiTable from '@mui/material/Table';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -6,12 +6,15 @@ import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-import type { IDataTableProps } from './DataTable.types';
+import type { IDataTableProps, ITableView } from './DataTable.types';
 import { TableHeader } from './TableHeader';
 import { TableBody } from './TableBody';
 import { TablePagination } from './TablePagination';
 import { TableFilters } from './TableFilters';
 import { BulkActionsToolbar } from './BulkActionsToolbar';
+import { ColumnVisibilityMenu } from './ColumnVisibilityMenu';
+import { ViewsMenu } from './ViewsMenu';
+import { useColumnVisibility } from './useColumnVisibility';
 import { tableContainerSx, tableSx } from './DataTable.styles';
 import { useDataTableFilters } from './useDataTableFilters';
 import { useDataTableSearch } from './useDataTableSearch';
@@ -21,52 +24,73 @@ import { useDataTableSelection } from './useDataTableSelection';
 
 /**
  * Enterprise DataTable Component (Module 10 - Step 10.9).
- *
- * Provides a generic, clean, extensible rendering foundation for tabular data.
- * Consumes filters, search, sorting, pagination, selection, and bulk action toolbar hooks,
- * supporting uncontrolled client-side setups while keeping parent controlled triggers intact.
  */
-export const DataTable = <TData,>({
-  data,
-  columns,
-  rowKey,
-  loading = false,
-  emptyMessage = 'No records found.',
-  dense = false,
-  hover = false,
-  striped = false,
-  bordered = false,
-  customEmptyState,
-  customLoadingState,
-  ariaLabel = 'Data Table',
-  ariaDescribedBy,
-  sortState,
-  onSort,
-  initialSortColumnId,
-  initialSortDirection,
-  pagination = true,
-  paginationState,
-  onPageChange,
-  onPageSizeChange,
-  initialPage,
-  initialPageSize,
-  search = false,
-  searchPlaceholder,
-  searchQuery,
-  onSearchQueryChange,
-  initialSearchQuery,
-  filterable = false,
-  filters,
-  onFilterChange,
-  onClearFilter,
-  onClearAllFilters,
-  initialFilters,
-  selection = false,
-  selectedRowIds,
-  onRowSelectionChange,
-  initialSelectedRowIds,
-  bulkActions,
-}: IDataTableProps<TData>): React.ReactElement => {
+export const DataTable = <TData,>(props: IDataTableProps<TData>): React.ReactElement => {
+  const {
+    data,
+    columns,
+    rowKey,
+    loading = false,
+    emptyMessage = 'No records found.',
+    dense = false,
+    hover = false,
+    striped = false,
+    bordered = false,
+    customEmptyState,
+    customLoadingState,
+    ariaLabel = 'Data Table',
+    ariaDescribedBy,
+    sortState,
+    onSort,
+    initialSortColumnId,
+    initialSortDirection,
+    pagination = true,
+    paginationState,
+    onPageChange,
+    onPageSizeChange,
+    initialPage,
+    initialPageSize,
+    search = false,
+    searchPlaceholder,
+    searchQuery,
+    onSearchQueryChange,
+    initialSearchQuery,
+    filterable = false,
+    filters,
+    onFilterChange,
+    onClearFilter,
+    onClearAllFilters,
+    initialFilters,
+    selection = false,
+    selectedRowIds,
+    onRowSelectionChange,
+    initialSelectedRowIds,
+    bulkActions,
+    views = {},
+    defaultViewName,
+    onSaveView,
+    onDeleteView,
+    onSetDefaultView,
+    onLoadView,
+    visibleColumns: controlledVisibleColumns,
+    onVisibleColumnsChange,
+  } = props;
+  const { visibleColumns, toggleColumn, resetColumns, filteredColumns, setVisibleColumns } = useColumnVisibility(ariaLabel, columns, controlledVisibleColumns);
+
+  useEffect(() => {
+    if (onVisibleColumnsChange && visibleColumns !== controlledVisibleColumns) {
+        onVisibleColumnsChange(visibleColumns);
+    }
+  }, [visibleColumns, controlledVisibleColumns, onVisibleColumnsChange]);
+
+  const getCurrentViewData = (): Omit<ITableView, 'name'> => ({
+    visibleColumns,
+    searchQuery: searchQuery ?? '',
+    filters: filters ?? {},
+    sortState: sortState ?? { columnId: null, direction: null },
+    pageSize: paginationState?.pageSize ?? 10,
+  });
+
   // 1. Call client-side selection hook
   const localSelection = useDataTableSelection({
     data,
@@ -133,7 +157,7 @@ export const DataTable = <TData,>({
       : localSelection.selectedRowData;
 
   // 2. Call client-side filtering hook
-  const localFilters = useDataTableFilters(data, columns, initialFilters);
+  const localFilters = useDataTableFilters(data, filteredColumns, initialFilters);
 
   const activeFilters = filters !== undefined ? filters : localFilters.filters;
   const activeFilterChange =
@@ -144,7 +168,7 @@ export const DataTable = <TData,>({
   const activeFilterData = filters !== undefined ? data : localFilters.filteredData;
 
   // 3. Call client-side search hook (consumes filter-filtered data)
-  const localSearch = useDataTableSearch(activeFilterData, columns, initialSearchQuery ?? '');
+  const localSearch = useDataTableSearch(activeFilterData, filteredColumns, initialSearchQuery ?? '');
 
   const activeSearchQuery = searchQuery !== undefined ? searchQuery : localSearch.searchQuery;
   const activeSetSearchQuery =
@@ -152,7 +176,7 @@ export const DataTable = <TData,>({
   const activeSearchData = searchQuery !== undefined ? activeFilterData : localSearch.filteredData;
 
   // 4. Call client-side sorting hook (consumes search + filter-filtered data)
-  const localSorting = useDataTableSorting(activeSearchData, columns, {
+  const localSorting = useDataTableSorting(activeSearchData, filteredColumns, {
     columnId: initialSortColumnId ?? null,
     direction: initialSortDirection ?? null,
   });
@@ -177,8 +201,14 @@ export const DataTable = <TData,>({
   const activeTotalRecords =
     paginationState !== undefined ? paginationState.totalRecords : activeSortedData.length;
 
-  const activeOnPageChange =
-    onPageChange !== undefined ? onPageChange : localPagination.handlePageChange;
+  const activeOnPageChange = (page: number) => {
+    console.log("DataTable onPageChange:", page);
+    if (onPageChange !== undefined) {
+      onPageChange(page);
+    } else {
+      localPagination.handlePageChange(page);
+    }
+  };
   const activeOnPageSizeChange =
     onPageSizeChange !== undefined ? onPageSizeChange : localPagination.handlePageSizeChange;
 
@@ -194,16 +224,24 @@ export const DataTable = <TData,>({
       : localPagination.endRecord;
 
   const { handlePageChange } = localPagination;
-  const serializedFilters = JSON.stringify(activeFilters);
+  const serializedFilters = useMemo(() => JSON.stringify(activeFilters), [activeFilters]);
 
   // Reset page selection to index 1 automatically whenever search or filter parameters change
+  const onPageChangeRef = React.useRef(onPageChange);
+  const handlePageChangeRef = React.useRef(handlePageChange);
+
   useEffect(() => {
-    if (onPageChange) {
-      onPageChange(1);
+    onPageChangeRef.current = onPageChange;
+    handlePageChangeRef.current = handlePageChange;
+  });
+
+  useEffect(() => {
+    if (onPageChangeRef.current) {
+      onPageChangeRef.current(1);
     } else {
-      handlePageChange(1);
+      handlePageChangeRef.current(1);
     }
-  }, [activeSearchQuery, serializedFilters, onPageChange, handlePageChange]);
+  }, [activeSearchQuery, serializedFilters]);
 
   // Slice data for pagination ONLY if pagination is client-side (uncontrolled)
   const paginatedData =
@@ -222,7 +260,7 @@ export const DataTable = <TData,>({
       {/* Filters Toolbar panel */}
       {filterable && (
         <TableFilters
-          columns={columns}
+          columns={filteredColumns}
           filters={activeFilters}
           onFilterChange={activeFilterChange}
           onClearFilter={activeClearFilter}
@@ -232,7 +270,7 @@ export const DataTable = <TData,>({
 
       {/* Top Search Toolbar panel */}
       {search && (
-        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-start' }}>
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <OutlinedInput
             value={activeSearchQuery}
             onChange={(e) => activeSetSearchQuery(e.target.value)}
@@ -263,6 +301,21 @@ export const DataTable = <TData,>({
               maxWidth: { xs: '100%', sm: 360 },
             }}
           />
+          <Box display="flex">
+            <ColumnVisibilityMenu columns={columns} visibleColumns={visibleColumns} onToggle={toggleColumn} onReset={resetColumns} />
+            <ViewsMenu 
+                views={views}
+                defaultViewName={defaultViewName ?? null}
+                onSave={(name: string) => onSaveView?.({ name, ...getCurrentViewData() })}
+                onLoad={(view: ITableView) => {
+                    setVisibleColumns(view.visibleColumns);
+                    onLoadView?.(view);
+                }}
+                onDelete={onDeleteView || (() => {})}
+                onSetDefault={onSetDefaultView || (() => {})}
+                getCurrentView={getCurrentViewData}
+            />
+          </Box>
         </Box>
       )}
 
@@ -278,40 +331,42 @@ export const DataTable = <TData,>({
 
       {/* Main Table Container wrapper */}
       <Box sx={tableContainerSx}>
-        <MuiTable
-          size={dense ? 'small' : 'medium'}
-          aria-label={ariaLabel}
-          aria-describedby={ariaDescribedBy}
-          aria-busy={loading}
-          sx={tableSx}
-        >
-          <TableHeader
-            columns={columns}
-            bordered={bordered}
-            sortState={activeSortState}
-            onSort={activeHandleSort}
-            selection={isSelectable}
-            selectedRowIds={activeSelectedRowIds}
-            onSelectAll={handleSelectAll}
-            visibleRows={paginatedData}
-            rowKey={rowKey}
-          />
-          <TableBody
-            data={paginatedData}
-            columns={columns}
-            rowKey={rowKey}
-            hover={hover}
-            striped={striped}
-            bordered={bordered}
-            emptyMessage={displayEmptyMessage}
-            loading={loading}
-            customEmptyState={customEmptyState}
-            customLoadingState={customLoadingState}
-            selection={isSelectable}
-            selectedRowIds={activeSelectedRowIds}
-            onSelectRow={handleSelectRow}
-          />
-        </MuiTable>
+        <Box sx={{ overflowX: 'auto', width: '100%', flex: 1 }}>
+          <MuiTable
+            size={dense ? 'small' : 'medium'}
+            aria-label={ariaLabel}
+            aria-describedby={ariaDescribedBy}
+            aria-busy={loading}
+            sx={tableSx}
+          >
+            <TableHeader
+              columns={filteredColumns}
+              bordered={bordered}
+              sortState={activeSortState}
+              onSort={activeHandleSort}
+              selection={isSelectable}
+              selectedRowIds={activeSelectedRowIds}
+              onSelectAll={handleSelectAll}
+              visibleRows={paginatedData}
+              rowKey={rowKey}
+            />
+            <TableBody
+              data={paginatedData}
+              columns={filteredColumns}
+              rowKey={rowKey}
+              hover={hover}
+              striped={striped}
+              bordered={bordered}
+              emptyMessage={displayEmptyMessage}
+              loading={loading}
+              customEmptyState={customEmptyState}
+              customLoadingState={customLoadingState}
+              selection={isSelectable}
+              selectedRowIds={activeSelectedRowIds}
+              onSelectRow={handleSelectRow}
+            />
+          </MuiTable>
+        </Box>
 
         {/* Render pagination footer bar if enabled and rows exist (or loading) */}
         {isPaginated && (activeTotalRecords > 0 || loading) && (

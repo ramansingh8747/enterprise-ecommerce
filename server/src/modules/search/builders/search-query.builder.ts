@@ -12,10 +12,9 @@ export class SearchQueryBuilder {
    * Combines all filter fragment methods into one final MongoDB filter object.
    */
   static build(filters: ISearchFilters): Record<string, any> {
-    if (!filters) return { isDeleted: false };
+    if (!filters) return {};
 
     const queryParts: Record<string, any>[] = [
-      { isDeleted: false },
       this.buildKeyword(filters.keyword),
       this.buildCategory(filters.category),
       this.buildBrand(filters.brand),
@@ -26,6 +25,10 @@ export class SearchQueryBuilder {
       this.buildTags(filters.tags),
       this.buildAttributes(filters.attributes),
     ].filter((part) => Object.keys(part).length > 0);
+
+    if (queryParts.length === 0) {
+      return {};
+    }
 
     if (queryParts.length === 1) {
       return queryParts[0];

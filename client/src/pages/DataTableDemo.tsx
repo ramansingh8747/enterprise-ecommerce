@@ -17,7 +17,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
 import { Link } from 'react-router-dom';
 import { DataTable } from '@/shared/components/table/DataTable/DataTable';
-import type { IDataTableColumn, IBulkAction } from '@/shared/components/table/DataTable/DataTable.types';
+import type { IDataTableColumn, IBulkAction, ITableView } from '@/shared/components/table/DataTable/DataTable.types';
+import { useTableViews } from '@/shared/components/table/DataTable/useTableViews';
 import { formatCurrency } from '@/shared/helpers/formatter.helper';
 import { useProductTable } from '@/features/products/hooks/useProductTable';
 import type { IProduct } from '@/features/products/types/products.types';
@@ -36,10 +37,24 @@ export const DataTableDemo: React.FC = () => {
     onSearchQueryChange,
     filters,
     onFilterChange,
+    sortState,
+    setSort,
+    visibleColumns,
+    setVisibleColumns,
   } = useProductTable();
+
+  const { views, defaultViewName, saveView, deleteView, setDefault } = useTableViews('products-table');
   const [simulateLoading, setSimulateLoading] = useState(false);
   const [simulateEmpty, setSimulateEmpty] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  const onLoadView = (view: ITableView) => {
+    onSearchQueryChange(view.searchQuery);
+    Object.entries(view.filters).forEach(([key, val]) => onFilterChange(key, val));
+    setSort?.(view.sortState);
+    onPageSizeChange(view.pageSize);
+    setVisibleColumns?.(view.visibleColumns);
+  };
 
   // Configurable demonstration bulk actions configuration
   const bulkActions: IBulkAction<IProduct>[] = [
@@ -252,7 +267,7 @@ export const DataTableDemo: React.FC = () => {
         </Card>
 
         {/* Data Table */}
-        <Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: 'auto', flex: 1 }}>
           <DataTable
             data={simulateEmpty ? [] : products}
             columns={columns}
@@ -268,11 +283,21 @@ export const DataTableDemo: React.FC = () => {
             filterable
             filters={filters}
             onFilterChange={onFilterChange}
+            sortState={sortState}
+            onSort={(id) => setSort?.({ columnId: id, direction: sortState?.direction === 'asc' ? 'desc' : 'asc' })}
             selection
             bulkActions={bulkActions}
             hover
             striped
             bordered
+            views={views}
+            defaultViewName={defaultViewName}
+            onSaveView={saveView}
+            onDeleteView={deleteView}
+            onSetDefaultView={setDefault}
+            onLoadView={onLoadView}
+            visibleColumns={visibleColumns}
+            onVisibleColumnsChange={setVisibleColumns}
           />
         </Box>
       </Stack>

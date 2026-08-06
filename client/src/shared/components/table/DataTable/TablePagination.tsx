@@ -71,6 +71,10 @@ export const TablePagination: React.FC<ITablePaginationProps> = ({
     onPageSizeChange(Number(event.target.value));
   };
 
+  const handlePageChange = (pageNum: number) => {
+    onPageChange(pageNum);
+  };
+
   const pages = getPageNumbers(page, totalPages);
 
   const isFirstDisabled = page === 1;
@@ -118,7 +122,7 @@ export const TablePagination: React.FC<ITablePaginationProps> = ({
           {/* First Page */}
           <IconButton
             size="small"
-            onClick={() => onPageChange(1)}
+            onClick={() => handlePageChange(1)}
             disabled={isFirstDisabled}
             aria-label="Go to first page"
           >
@@ -128,7 +132,7 @@ export const TablePagination: React.FC<ITablePaginationProps> = ({
           {/* Previous Page */}
           <IconButton
             size="small"
-            onClick={() => onPageChange(page - 1)}
+            onClick={() => handlePageChange(page - 1)}
             disabled={isFirstDisabled}
             aria-label="Go to previous page"
           >
@@ -160,7 +164,7 @@ export const TablePagination: React.FC<ITablePaginationProps> = ({
                   size="small"
                   variant={isActive ? 'contained' : 'text'}
                   color={isActive ? 'primary' : 'inherit'}
-                  onClick={() => onPageChange(pageNum)}
+                  onClick={() => handlePageChange(pageNum)}
                   sx={{
                     minWidth: 32,
                     height: 32,
@@ -181,7 +185,7 @@ export const TablePagination: React.FC<ITablePaginationProps> = ({
           {/* Next Page */}
           <IconButton
             size="small"
-            onClick={() => onPageChange(page + 1)}
+            onClick={() => handlePageChange(page + 1)}
             disabled={isLastDisabled}
             aria-label="Go to next page"
           >
@@ -191,7 +195,7 @@ export const TablePagination: React.FC<ITablePaginationProps> = ({
           {/* Last Page */}
           <IconButton
             size="small"
-            onClick={() => onPageChange(totalPages)}
+            onClick={() => handlePageChange(totalPages)}
             disabled={isLastDisabled}
             aria-label="Go to last page"
           >

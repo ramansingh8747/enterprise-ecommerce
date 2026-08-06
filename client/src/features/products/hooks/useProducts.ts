@@ -14,10 +14,10 @@ export function useProducts() {
   const [lastRefetchedTimestamp, setLastRefetchedTimestamp] = useState<string | null>(null);
 
   const mappedProducts = useMemo<IProduct[]>(() => {
-    if (!data?.data?.data) {
+    if (!data?.data?.products) {
       return [];
     }
-    return mapBackendProductsToFrontend(data.data.data);
+    return mapBackendProductsToFrontend(data.data.products);
   }, [data]);
 
   // Update success timestamp on query loaded changes

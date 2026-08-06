@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useGetProductsQuery } from '../api/productsApi';
 import { debounce } from '@/utils/debounce.util';
@@ -14,25 +14,26 @@ export const useProductTable = () => {
   const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
   const search = searchParams.get('search') || '';
   const category = searchParams.get('category') || '';
-  const sort = searchParams.get('sort') || '';
+  const sortParam = searchParams.get('sort') || '';
 
+  console.log('useProductTable - Requesting products with params:', { page, pageSize, search, category, sortParam });
   const { data, isFetching } = useGetProductsQuery({
     page,
     limit: pageSize,
     search,
     category,
-    sort,
+    sort: sortParam,
   });
 
   const products = useMemo(() => {
-    return data?.data?.data.map(mapBackendProductToFrontend) || [];
+    return data?.data?.products.map(mapBackendProductToFrontend) || [];
   }, [data]);
 
   const paginationState = useMemo(() => ({
     page,
     pageSize,
     totalPages: data?.data?.pagination.totalPages || 1,
-    totalRecords: data?.data?.pagination.totalResults || 0,
+    totalRecords: data?.data?.pagination.totalRecords || 0,
   }), [page, pageSize, data]);
 
   const handleSearchChange = useMemo(() => debounce((value: unknown) => {
@@ -52,18 +53,26 @@ export const useProductTable = () => {
     setSearchParams(next);
   };
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     const next = new URLSearchParams(searchParams);
     next.set('page', page.toString());
     setSearchParams(next);
-  };
+  }, [searchParams, setSearchParams]);
 
-  const handlePageSizeChange = (pageSize: number) => {
+  const handlePageSizeChange = useCallback((pageSize: number) => {
     const next = new URLSearchParams(searchParams);
     next.set('pageSize', pageSize.toString());
     next.set('page', '1');
     setSearchParams(next);
-  };
+  }, [searchParams, setSearchParams]);
+
+  const [sort, setSortState] = useState<{ columnId: string | null; direction: 'asc' | 'desc' | null }>({
+    columnId: null,
+    direction: null,
+  });
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({});
+
+  const memoizedFilters = useMemo(() => ({ category }), [category]);
 
   return {
     data: products,
@@ -71,9 +80,13 @@ export const useProductTable = () => {
     paginationState,
     searchQuery: search,
     onSearchQueryChange: handleSearchChange,
-    filters: { category }, // Example filter
+    filters: memoizedFilters, // Example filter
     onFilterChange: handleFilterChange,
     onPageChange: handlePageChange,
     onPageSizeChange: handlePageSizeChange,
+    sortState: sort,
+    setSort: setSortState,
+    visibleColumns,
+    setVisibleColumns,
   };
 };

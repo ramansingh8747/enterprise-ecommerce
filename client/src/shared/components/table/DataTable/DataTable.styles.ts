@@ -2,7 +2,8 @@ import type { SxProps, Theme } from '@mui/material';
 
 export const tableContainerSx: SxProps<Theme> = {
   width: '100%',
-  overflowX: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
   borderRadius: (theme) => `${theme.shape.borderRadius}px`,
   border: (theme) => `1px solid ${theme.palette.divider}`,
   backgroundColor: (theme) => theme.palette.background.paper,
@@ -67,6 +68,7 @@ export const tableLoadingStateSx: SxProps<Theme> = {
 
 export const paginationContainerSx: SxProps<Theme> = {
   display: 'flex',
+  flexShrink: 0,
   flexDirection: { xs: 'column', sm: 'row' },
   alignItems: 'center',
   justifyContent: 'space-between',

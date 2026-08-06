@@ -4,6 +4,7 @@ import type { IBackendProduct, IProduct } from '../types/products.types';
  * Maps a backend product object to the frontend DataTable product model.
  */
 export function mapBackendProductToFrontend(product: IBackendProduct): IProduct {
+  console.log('Mapping product:', product);
   let status: 'active' | 'draft' | 'out_of_stock' = 'draft';
 
   if (product.status === 'ACTIVE') {

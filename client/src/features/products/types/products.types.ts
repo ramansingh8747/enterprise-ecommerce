@@ -30,11 +30,11 @@ export interface IProduct {
  * RTK Query API Search Response Wrapper.
  */
 export interface ISearchResponse {
-  readonly data: readonly IBackendProduct[];
+  readonly products: readonly IBackendProduct[];
   readonly pagination: {
     readonly currentPage: number;
     readonly totalPages: number;
-    readonly totalResults: number;
+    readonly totalRecords: number;
     readonly hasNextPage: boolean;
     readonly hasPrevPage: boolean;
   };

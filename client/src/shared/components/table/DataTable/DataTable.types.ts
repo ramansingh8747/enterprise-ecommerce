@@ -50,6 +50,18 @@ export interface IBulkAction<TData> {
 }
 
 /**
+ * View definition structure.
+ */
+export interface ITableView {
+  readonly name: string;
+  readonly visibleColumns: Record<string, boolean>;
+  readonly searchQuery: string;
+  readonly filters: Record<string, unknown>;
+  readonly sortState: ISortState;
+  readonly pageSize: number;
+}
+
+/**
  * Generic Column Definition Interface for Data Table.
  *
  * Implemented with read-only properties to ensure immutability.
@@ -177,6 +189,15 @@ export interface IDataTableProps<TData> {
   readonly initialSelectedRowIds?: readonly (string | number)[] | undefined;
   /** Configurable bulk actions dropdown trigger configurations. */
   readonly bulkActions?: readonly IBulkAction<TData>[] | undefined;
+  /** Saved views configuration. */
+  readonly views?: Record<string, ITableView> | undefined;
+  readonly defaultViewName?: string | null | undefined;
+  readonly onSaveView?: ((view: ITableView) => void) | undefined;
+  readonly onDeleteView?: ((name: string) => void) | undefined;
+  readonly onSetDefaultView?: ((name: string | null) => void) | undefined;
+  readonly onLoadView?: ((view: ITableView) => void) | undefined;
+  readonly visibleColumns?: Record<string, boolean> | undefined;
+  readonly onVisibleColumnsChange?: ((columns: Record<string, boolean>) => void) | undefined;
 }
 
 /**

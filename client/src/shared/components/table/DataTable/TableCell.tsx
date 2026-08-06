@@ -25,18 +25,30 @@ export const TableCell = <TData,>({
     ? String(rawValue)
     : '';
 
+  if (column.id === 'sku') {
+    console.log("TableCell Diagnostics for SKU:");
+    console.log("- column.id:", column.id);
+    console.log("- accessor:", column.accessor);
+    console.log("- value passed to render():", rawValue);
+    console.log("- final content:", content);
+  }
+
   const style = {
     width: column.width,
     minWidth: column.minWidth,
     maxWidth: column.maxWidth,
   };
 
+  const cellProps = {
+    align,
+    component: "td" as const,
+    style: style,
+    className: column.className ?? '',
+  };
+
   return (
     <MuiTableCell
-      align={align}
-      component="td"
-      style={style}
-      className={column.className ?? ''}
+      {...cellProps}
       sx={[
         tableCellSx,
         ...(bordered ? [tableBorderedCellSx] : []),
